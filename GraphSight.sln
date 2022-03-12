@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.Core", "GraphSig
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.Tests", "..\GraphSight.Tests\GraphSight.Tests.csproj", "{BFD91BEF-1672-459E-A59C-7FB19D3FEC3D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.SampleProject", "..\GraphSight.SampleProject\GraphSight.SampleProject.csproj", "{033A3FC7-CF2C-46C1-B569-F7279C3DD0B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{BFD91BEF-1672-459E-A59C-7FB19D3FEC3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFD91BEF-1672-459E-A59C-7FB19D3FEC3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFD91BEF-1672-459E-A59C-7FB19D3FEC3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{033A3FC7-CF2C-46C1-B569-F7279C3DD0B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{033A3FC7-CF2C-46C1-B569-F7279C3DD0B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{033A3FC7-CF2C-46C1-B569-F7279C3DD0B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{033A3FC7-CF2C-46C1-B569-F7279C3DD0B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

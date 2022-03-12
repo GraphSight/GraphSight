@@ -12,7 +12,14 @@ namespace GraphSight.Core.Client
         private string _secret;
         private Action _onErrorAction; 
 
-        public GraphSightClient() { }
+        private GraphSightClient() { }
+
+        public GraphSightClient(string username, string password, string URI, string secret) {
+            _username = username;
+            _password = password;
+            _URI = URI;
+            _secret = secret;
+        }
 
         #region public
         public void SetURI(string URI) => _URI = URI;
