@@ -2,7 +2,7 @@
 
 # GraphSight
 
-GraphSight is the open source library that enables rapid and easy collection and analysis of application data using the power of TigerGrah graph database.
+GraphSight is the open source library that enables rapid and easy collection and analysis of application data using the power of the TigerGraph graph database.
 
 ---
 
