@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GraphSight.Core.Enums
+namespace GraphSight.Core.Enums.TigerGraph
 {
     public enum VertexAttributes
     {

@@ -7,6 +7,7 @@ namespace GraphSight.Core.Client
         void SetURI(string URI);
         void SetUsername(string username);
         void SetPassword(string password);
+        void SetSecret(string secret);
         void GenerateSchemaIfNotExists();
         void Validate();
         void SetCustomErrorHandler(Action action);

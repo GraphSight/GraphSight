@@ -9,26 +9,26 @@ using System.Threading.Tasks;
 
 namespace GraphSight.Core.API
 {
-    internal sealed class APIClient : IApiClientBuilder
+    internal abstract class APIClient : IApiClientBuilder
     {
-        private static readonly Lazy<APIClient> lazy
-             = new Lazy<APIClient>(() => new APIClient());
+        protected string _URI;
+        protected string _username;
+        protected string _password;
+        protected string _secret;
+        protected string _token;
 
-        public static APIClient Instance => lazy.Value;
-
-        private APIClient() { }
-
-        private string _URI;
-        private string _username;
-        private string _password;
-        private readonly HttpClient _httpClient = new HttpClient();
+        protected readonly HttpClient _httpClient = new HttpClient();
         public void SetURI(string URI) => _URI = URI;
         public void SetUsername(string username) => _username = username;
         public void SetPassword(string password) => _password = password;
+        public void SetSecret(string secret) => _secret = secret;
 
-        public void Validate()
+        protected void Validate()
         {
             throw new NotImplementedException();
         }
+
+        protected void GenerateToken() { }
+
     }
 }
