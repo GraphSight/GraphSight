@@ -50,7 +50,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GraphSight\GraphSight.Core.csproj">
+    <ProjectReference Include="..\GraphSight.Core\GraphSight.Core.csproj">
       <Project>{6752AF2D-AC1B-44CA-B2DC-E41BF19C9144}</Project>
       <Name>GraphSight.Core</Name>
     </ProjectReference>

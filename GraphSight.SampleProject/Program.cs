@@ -1,4 +1,4 @@
-﻿using GraphSight.Core.Client;
+﻿using GraphSight.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +15,12 @@ namespace GraphSight.SampleProject
             GraphSightClient client = new GraphSightClient(
                 username: "", 
                 password: "", 
-                URI: "", 
+                URI: "graphsight.i.tgcloud.io", 
                 secret: "");
+
+            string resp = client.PingServer();
+            var a = "";
+
 
         }
     }

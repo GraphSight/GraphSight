@@ -5,30 +5,37 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using GraphSight.Core;
 
-
-namespace GraphSight.Core.API
+namespace GraphSight.Core
 {
-    internal abstract class APIClient : IApiClientBuilder
+    internal abstract class APIClient : IApiClient
     {
-        protected string _URI;
-        protected string _username;
-        protected string _password;
-        protected string _secret;
+        protected ICredentials _credentials; 
         protected string _token;
-
+        
         protected readonly HttpClient _httpClient = new HttpClient();
-        public void SetURI(string URI) => _URI = URI;
-        public void SetUsername(string username) => _username = username;
-        public void SetPassword(string password) => _password = password;
-        public void SetSecret(string secret) => _secret = secret;
+        protected GraphSightClient _graphSightClient;
+        public void SetToken(string token) => _token = token;
 
-        protected void Validate()
+        /// <summary>
+        /// Builds the http client base address. User may input an incomplete URI, which will 
+        /// be built via this method to create a valid URI. 
+        /// </summary>
+        /// <param name="apiDomain">Starting path of api in domain, such as "/api"</param>
+        internal void ConstructBaseUri(string apiDomain = "")
         {
-            throw new NotImplementedException();
+
+            Uri validUri = null;
+            Uri.TryCreate(_credentials.Domain, UriKind.Absolute, out validUri);
+
+            _httpClient.BaseAddress = validUri ?? new UriBuilder("https", _credentials.Domain, 443, apiDomain).Uri;
+
         }
 
+        protected GraphSightClient GetGraphSightClient() => _graphSightClient; 
         protected void GenerateToken() { }
+
 
     }
 }
