@@ -23,43 +23,43 @@ namespace GraphSight.Core.Converters.TigerGraph
             throw new ArgumentException($"Object type {valueType.Name} could not be converted into a TigerGraph Query Parameter.");
         }
 
-        internal VertexAttributes ConvertVertexAttribute(object value)
+        internal AttributeTypes ConvertVertexAttribute(object value)
         {
             Type valueType = value.GetType();
 
-            if (valueType == typeof(int)) return VertexAttributes.INT;
-            if (valueType == typeof(uint)) return VertexAttributes.UINT;
-            if (valueType == typeof(bool)) return VertexAttributes.BOOL;
-            if (valueType == typeof(float)) return VertexAttributes.FLOAT;
-            if (valueType == typeof(double)) return VertexAttributes.DOUBLE;
-            if (valueType == typeof(char)) return VertexAttributes.STRING;
-            if (valueType == typeof(string)) return VertexAttributes.STRING;
-            if (valueType == typeof(DateTime)) return VertexAttributes.DATETIME;
+            if (valueType == typeof(int)) return AttributeTypes.INT;
+            if (valueType == typeof(uint)) return AttributeTypes.UINT;
+            if (valueType == typeof(bool)) return AttributeTypes.BOOL;
+            if (valueType == typeof(float)) return AttributeTypes.FLOAT;
+            if (valueType == typeof(double)) return AttributeTypes.DOUBLE;
+            if (valueType == typeof(char)) return AttributeTypes.STRING;
+            if (valueType == typeof(string)) return AttributeTypes.STRING;
+            if (valueType == typeof(DateTime)) return AttributeTypes.DATETIME;
 
-            if (valueType == typeof(List<>)) return VertexAttributes.LIST;
-            if (valueType == typeof(LinkedList<>)) return VertexAttributes.LIST;
-            if (valueType == typeof(Stack<>)) return VertexAttributes.LIST;
-            if (valueType == typeof(Queue<>)) return VertexAttributes.LIST;
-            if (valueType.IsArray) return VertexAttributes.LIST;
+            if (valueType == typeof(List<>)) return AttributeTypes.LIST;
+            if (valueType == typeof(LinkedList<>)) return AttributeTypes.LIST;
+            if (valueType == typeof(Stack<>)) return AttributeTypes.LIST;
+            if (valueType == typeof(Queue<>)) return AttributeTypes.LIST;
+            if (valueType.IsArray) return AttributeTypes.LIST;
 
-            if (valueType == typeof(Dictionary<,>)) return VertexAttributes.MAP;
+            if (valueType == typeof(Dictionary<,>)) return AttributeTypes.MAP;
 
-            if (valueType == typeof(Tuple)) return VertexAttributes.UDT;
+            if (valueType == typeof(Tuple)) return AttributeTypes.UDT;
 
             throw new ArgumentException($"Object type {valueType.Name} could not be converted into a TigerGraph Vertex Attribute.");
         }
 
-        internal VertexPrimaryIDTypes ConvertVertexPrimaryIDTypes(object value)
+        internal PrimaryIDTypes ConvertVertexPrimaryIDTypes(object value)
         {
             Type valueType = value.GetType();
 
-            if (valueType == typeof(char)) return VertexPrimaryIDTypes.STRING;
-            if (valueType == typeof(string)) return VertexPrimaryIDTypes.STRING;
-            if (valueType == typeof(int)) return VertexPrimaryIDTypes.INT;
-            if (valueType == typeof(uint)) return VertexPrimaryIDTypes.UINT;
-            if (valueType == typeof(float)) return VertexPrimaryIDTypes.FLOAT;
-            if (valueType == typeof(double)) return VertexPrimaryIDTypes.DOUBLE;
-            if (valueType == typeof(DateTime)) return VertexPrimaryIDTypes.DATETIME;
+            if (valueType == typeof(char)) return PrimaryIDTypes.STRING;
+            if (valueType == typeof(string)) return PrimaryIDTypes.STRING;
+            if (valueType == typeof(int)) return PrimaryIDTypes.INT;
+            if (valueType == typeof(uint)) return PrimaryIDTypes.UINT;
+            if (valueType == typeof(float)) return PrimaryIDTypes.FLOAT;
+            if (valueType == typeof(double)) return PrimaryIDTypes.DOUBLE;
+            if (valueType == typeof(DateTime)) return PrimaryIDTypes.DATETIME;
 
             throw new ArgumentException($"Object type {valueType.Name} could not be converted into a TigerGraph Vertex Primary ID type.");
         }

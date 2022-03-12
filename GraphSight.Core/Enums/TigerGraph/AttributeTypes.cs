@@ -4,13 +4,18 @@ using System.Text;
 
 namespace GraphSight.Core.Enums.TigerGraph
 {
-    public enum VertexPrimaryIDTypes
+    public enum AttributeTypes
     {
-        STRING, 
-        INT,
+        INT, 
         UINT,
+        BOOL,
         FLOAT,
         DOUBLE,
-        DATETIME
+        STRING,
+        DATETIME,
+        LIST,
+        SET,
+        MAP,
+        UDT
     }
 }

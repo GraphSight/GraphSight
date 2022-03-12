@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Graph\" />
     <Folder Include="Interceptor\" />
   </ItemGroup>
 
