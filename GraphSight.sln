@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.Core", "GraphSight.Core.csproj", "{6752AF2D-AC1B-44CA-B2DC-E41BF19C9144}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.Core", "GraphSight.Core\GraphSight.Core.csproj", "{6752AF2D-AC1B-44CA-B2DC-E41BF19C9144}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.Tests", "..\GraphSight.Tests\GraphSight.Tests.csproj", "{BFD91BEF-1672-459E-A59C-7FB19D3FEC3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.Tests", "GraphSight.Tests\GraphSight.Tests.csproj", "{BFD91BEF-1672-459E-A59C-7FB19D3FEC3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.SampleProject", "..\GraphSight.SampleProject\GraphSight.SampleProject.csproj", "{033A3FC7-CF2C-46C1-B569-F7279C3DD0B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphSight.SampleProject", "GraphSight.SampleProject\GraphSight.SampleProject.csproj", "{033A3FC7-CF2C-46C1-B569-F7279C3DD0B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
