@@ -1,4 +1,4 @@
-![RamseyTrusted Logo](./public/graph-sight-logo.png)
+![RamseyTrusted Logo](./public/graph-sight-slim-logo.png)
 
 # GraphSight
 
