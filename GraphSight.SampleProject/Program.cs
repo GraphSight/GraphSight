@@ -13,9 +13,9 @@ namespace GraphSight.SampleProject
         static void Main(string[] args)
         {
             GraphSightClient client = new GraphSightClient(
-                username: "", 
+                username: "tigergraph", 
                 password: "", 
-                URI: "graphsight.i.tgcloud.io", 
+                URI: "https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.io", 
                 secret: "");
 
             string resp = client.PingServer();

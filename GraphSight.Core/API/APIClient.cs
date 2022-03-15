@@ -63,6 +63,8 @@ namespace GraphSight.Core
 
             _httpClient.DefaultRequestHeaders.Accept.Clear();
 
+            Console.WriteLine($"{_httpClient.BaseAddress}{endpoint}");
+
             HttpResponseMessage response = await
              _HTTPRetryPolicy.ExecuteAsync(() =>
              _HTTPPostPolicy.ExecuteAsync(async token =>
