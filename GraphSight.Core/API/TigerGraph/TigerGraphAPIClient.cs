@@ -11,7 +11,7 @@ namespace GraphSight.Core
     internal sealed class TigerGraphAPIClient : APIClient
     {
         private static readonly string TOKEN_LIFETIME = "100000";  //Specifies time before a token is reset within TigerGraph.
-        private string _token;
+        private string _token; 
         protected TigerCredentials _credentials;
 
         private static readonly Lazy<TigerGraphAPIClient> lazy
@@ -26,11 +26,5 @@ namespace GraphSight.Core
             if(_credentials == null) 
                 throw new NullReferenceException("Cannot call API functions using null credentials.");
         }
-
-        internal void SetMaxRetries(int maxRetries) => base.SetMaxRetryPolicy(maxRetries); 
-
-        internal void SetHttpGetTimeout(int httpGetTimeout) => base.SetDefaultGetPolicy(httpGetTimeout);
-
-        internal void SetHttpPostTimeout(int httpPostTimeout) => base.SetDefaultPostPolicy(httpPostTimeout);
     }
 }

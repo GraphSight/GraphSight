@@ -40,9 +40,9 @@ namespace GraphSight.Core
         public void SetCustomErrorHandler(Action action) => _onErrorAction = action;
         public void SetCustomServiceStatusIsDownAction(Action action) => _onServiceStatusIsDownAction = action;
 
-        public void SetMaxRetries(int maxRetries) => TigerGraphAPIClient.Instance.SetMaxRetries(maxRetries);
-        public void SetHttpGetTimeout(int httpGetTimeout) => TigerGraphAPIClient.Instance.SetHttpGetTimeout(httpGetTimeout);
-        public void SetHttpPostTimeout(int httpPostTimeout) => TigerGraphAPIClient.Instance.SetHttpPostTimeout(httpPostTimeout);
+        public void SetMaxRetries(int maxRetries) => TigerGraphAPIClient.Instance.SetMaxRetryPolicy(maxRetries);
+        public void SetHttpGetTimeout(int httpGetTimeout) => TigerGraphAPIClient.Instance.SetDefaultGetPolicy(httpGetTimeout);
+        public void SetHttpPostTimeout(int httpPostTimeout) => TigerGraphAPIClient.Instance.SetDefaultPostPolicy(httpPostTimeout);
 
         public void BeginTracking(Guid sessionID = new Guid()) {
             throw new NotImplementedException();

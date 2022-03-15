@@ -15,9 +15,9 @@ namespace GraphSight.Core
 {
     internal abstract class APIClient : IApiClient
     {
-        private AsyncTimeoutPolicy<HttpResponseMessage> _getPolicy;
-        private AsyncTimeoutPolicy<HttpResponseMessage> _postPolicy;
-        private AsyncRetryPolicy<HttpResponseMessage> _httpRetryPolicy;
+        private AsyncTimeoutPolicy<HttpResponseMessage> _HTTPGetPolicy;
+        private AsyncTimeoutPolicy<HttpResponseMessage> _HTTPPostPolicy;
+        private AsyncRetryPolicy<HttpResponseMessage> _HTTPRetryPolicy;
 
         protected readonly HttpClient _httpClient = new HttpClient();
         protected GraphSightClient _graphSightClient;
@@ -28,7 +28,7 @@ namespace GraphSight.Core
             Uri validUri = null;
             Uri.TryCreate(baseURI, UriKind.Absolute, out validUri);
 
-            _httpClient.BaseAddress = validUri ?? new UriBuilder("https", baseURI, 443, "").Uri;
+            _httpClient.BaseAddress = validUri ?? new UriBuilder("https", baseURI, 443, String.Empty).Uri;
 
             this.SetMaxRetryPolicy(maxRetries); 
             this.SetDefaultGetPolicy(httpGetTimeout);
@@ -38,58 +38,57 @@ namespace GraphSight.Core
 
         protected GraphSightClient GetGraphSightClient() => _graphSightClient;
 
-        protected void SetMaxRetryPolicy(int maxRetries)
+        public void SetMaxRetryPolicy(int maxRetries)
         {
-            _httpRetryPolicy =
+            _HTTPRetryPolicy =
                 Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
                     .Or<TimeoutRejectedException>()
                     .RetryAsync(maxRetries);
         }
 
-        protected void SetDefaultGetPolicy(int GET_timeout) {
-            _getPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(GET_timeout));           
+        public void SetDefaultGetPolicy(int GET_timeout) {
+            _HTTPGetPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(GET_timeout));           
         }
 
-        protected void SetDefaultPostPolicy(int POST_timeout) {
-            _postPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(POST_timeout));
+        public void SetDefaultPostPolicy(int POST_timeout) {
+            _HTTPPostPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(POST_timeout));
         }
 
-        protected AsyncTimeoutPolicy<HttpResponseMessage> GetPolicy(HttpMethod httpMethod) => httpMethod == HttpMethod.Get ? _getPolicy : _postPolicy;
+        protected AsyncTimeoutPolicy<HttpResponseMessage> GetPolicy(HttpMethod httpMethod) => httpMethod == HttpMethod.Get ? _HTTPGetPolicy : _HTTPPostPolicy;
 
-        protected virtual async Task<string> HttpGetAsync(string endpoint) {
+        protected async Task<string> HttpGetAsync(string endpoint) {
 
             if(_httpClient == null) 
-                throw new ArgumentNullException("Http client is undeclared.");
+                throw new ArgumentNullException("HTTP client is not set.");
 
             _httpClient.DefaultRequestHeaders.Accept.Clear();
+
             HttpResponseMessage response = await
-             _httpRetryPolicy.ExecuteAsync(() =>
-             _postPolicy.ExecuteAsync(async token =>
+             _HTTPRetryPolicy.ExecuteAsync(() =>
+             _HTTPPostPolicy.ExecuteAsync(async token =>
              await _httpClient.GetAsync($"{_httpClient.BaseAddress}{endpoint}", token), CancellationToken.None));
 
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
 
-        protected virtual async Task<string> HttpPostAsync(string endpoint, Dictionary<string, string> body)
+        protected async Task<string> HttpPostAsync(string endpoint, Dictionary<string, string> body)
         {
             var content = new FormUrlEncodedContent(body);
 
             if (_httpClient == null)
-                throw new ArgumentNullException("Http client is undeclared.");
+                throw new ArgumentNullException("HTTP client is not set.");
 
             _httpClient.DefaultRequestHeaders.Accept.Clear();
 
             HttpResponseMessage response = await
-             _httpRetryPolicy.ExecuteAsync(() =>
-             _postPolicy.ExecuteAsync(async token =>
+             _HTTPRetryPolicy.ExecuteAsync(() =>
+             _HTTPPostPolicy.ExecuteAsync(async token =>
              await _httpClient.PostAsync($"{_httpClient.BaseAddress}{endpoint}", content, token), CancellationToken.None));
 
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
-
-
 
     }
 }
