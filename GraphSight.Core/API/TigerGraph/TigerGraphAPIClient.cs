@@ -1,6 +1,7 @@
 ﻿using GraphSight.Core;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,17 +10,15 @@ namespace GraphSight.Core
 {
     internal sealed class TigerGraphAPIClient : APIClient
     {
+        private static readonly string TOKEN_LIFETIME = "100000";  //Specifies time before a token is reset within TigerGraph.
+        private string _token;
+        protected TigerCredentials _credentials;
+
         private static readonly Lazy<TigerGraphAPIClient> lazy
             = new Lazy<TigerGraphAPIClient>(() => new TigerGraphAPIClient());
         public static TigerGraphAPIClient Instance => lazy.Value;
 
-        public async Task<string> PingServerAsync() {
-
-            _httpClient.DefaultRequestHeaders.Accept.Clear();
-            Task<string> pingServer = _httpClient.GetStringAsync(_httpClient.BaseAddress + "/ping");
-            return await pingServer;
-        }
-
+        internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping); 
         internal void SetCredentials(TigerCredentials credentials) => _credentials = credentials;
         internal void HandleServiceFault() => GetGraphSightClient()?.CallServiceStatusIsDownDelegate(); 
 
@@ -28,13 +27,10 @@ namespace GraphSight.Core
                 throw new NullReferenceException("Cannot call API functions using null credentials.");
         }
 
-        private async Task RequestTokenAsync() {
-            throw new NotImplementedException();
-        }
+        internal void SetMaxRetries(int maxRetries) => base.SetMaxRetryPolicy(maxRetries); 
 
-        /// <summary>
-        /// Custom Delegate Invokation called if the TigerGraph api endpoint is currently not available. 
-        /// </summary>
-        
+        internal void SetHttpGetTimeout(int httpGetTimeout) => base.SetDefaultGetPolicy(httpGetTimeout);
+
+        internal void SetHttpPostTimeout(int httpPostTimeout) => base.SetDefaultPostPolicy(httpPostTimeout);
     }
 }

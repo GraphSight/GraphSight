@@ -12,6 +12,10 @@ namespace GraphSight.Core
         private Action _onErrorAction;
         private Action _onServiceStatusIsDownAction;
 
+        private static readonly int _DEFAULT_RETRIES = 3;
+        private static readonly int _DEFAULT_GET_TIMEOUT = 10;
+        private static readonly int _DEFAULT_POST_TIMEOUT = 30;
+
         private GraphSightClient() { }
 
         public GraphSightClient(string username, string password, string URI, string secret) {
@@ -24,12 +28,21 @@ namespace GraphSight.Core
             };
 
             TigerGraphAPIClient.Instance.SetCredentials(_credentials);
-            TigerGraphAPIClient.Instance.ConstructBaseUri("/api");
+            TigerGraphAPIClient.Instance
+                .Configure(
+                    baseURI: URI, 
+                    maxRetries: _DEFAULT_RETRIES,
+                    httpGetTimeout: _DEFAULT_GET_TIMEOUT,
+                    httpPostTimeout: _DEFAULT_POST_TIMEOUT);
         }
 
         #region public
         public void SetCustomErrorHandler(Action action) => _onErrorAction = action;
         public void SetCustomServiceStatusIsDownAction(Action action) => _onServiceStatusIsDownAction = action;
+
+        public void SetMaxRetries(int maxRetries) => TigerGraphAPIClient.Instance.SetMaxRetries(maxRetries);
+        public void SetHttpGetTimeout(int httpGetTimeout) => TigerGraphAPIClient.Instance.SetHttpGetTimeout(httpGetTimeout);
+        public void SetHttpPostTimeout(int httpPostTimeout) => TigerGraphAPIClient.Instance.SetHttpPostTimeout(httpPostTimeout);
 
         public void BeginTracking(Guid sessionID = new Guid()) {
             throw new NotImplementedException();
