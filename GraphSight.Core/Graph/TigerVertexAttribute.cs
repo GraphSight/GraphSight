@@ -2,7 +2,7 @@
 
 namespace GraphSight.Core.Graph
 {
-    internal class VertexAttribute
+    internal class TigerVertexAttribute
     {
         public string Name { get; set; }
         public AttributeTypes Type { get; set; }
@@ -10,11 +10,11 @@ namespace GraphSight.Core.Graph
         public object DefaultValue { get; set; }
         public bool IsIndex { get; set; }
 
-        public VertexAttribute()
+        public TigerVertexAttribute()
         {
         }
 
-        public VertexAttribute(string name,
+        public TigerVertexAttribute(string name,
             AttributeTypes type,
             object value,
             object defaultValue,

@@ -3,23 +3,23 @@ using System.Collections.Generic;
 
 namespace GraphSight.Core.Graph
 {
-    internal class Edge
+    internal class TigerEdge
     {
         public string Name { get; set; }
         public bool IsDirected { get; set; }
         public bool IsReverseEdge { get; set; }
-        public List<Tuple<Vertex, Vertex>> SourceTargetPairs { get; set; }
-        public List<EdgeAttribute> Attributes { get; set; }
+        public List<Tuple<TigerVertex, TigerVertex>> SourceTargetPairs { get; set; }
+        public List<TigerEdgeAttribute> Attributes { get; set; }
 
-        public Edge()
+        public TigerEdge()
         {
         }
 
-        public Edge(string name,
+        public TigerEdge(string name,
             bool isDirected,
             bool isReverseEdge,
-            List<Tuple<Vertex, Vertex>> sourceTargetPairs,
-            List<EdgeAttribute> attributes)
+            List<Tuple<TigerVertex, TigerVertex>> sourceTargetPairs,
+            List<TigerEdgeAttribute> attributes)
         {
             Name = name;
             IsDirected = isDirected;

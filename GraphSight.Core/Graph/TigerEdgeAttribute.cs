@@ -2,18 +2,18 @@
 
 namespace GraphSight.Core.Graph
 {
-    internal class EdgeAttribute
+    internal class TigerEdgeAttribute
     {
         public string Name { get; set; }
         public AttributeTypes Type { get; set; }
         public object Value { get; set; }
         public object DefaultValue { get; set; }
 
-        public EdgeAttribute()
+        public TigerEdgeAttribute()
         {
         }
 
-        public EdgeAttribute(string name,
+        public TigerEdgeAttribute(string name,
             AttributeTypes type,
             object value,
             object defaultValue)
