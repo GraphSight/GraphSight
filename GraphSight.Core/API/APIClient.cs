@@ -46,7 +46,7 @@ namespace GraphSight.Core
 
         protected AsyncTimeoutPolicy<HttpResponseMessage> GetPolicy(HttpMethod httpMethod) => httpMethod == HttpMethod.Get ? _HTTPGetPolicy : _HTTPPostPolicy;
 
-        protected async Task<string> HttpGetAsync(string endpoint, int port = 14240)
+        protected async Task<string> HttpGetAsync(string endpoint, int port)
         {
 
             if (_httpClient == null)
@@ -63,7 +63,7 @@ namespace GraphSight.Core
             return await response.Content.ReadAsStringAsync();
         }
 
-        protected async Task<string> HttpPostAsync(string endpoint, Dictionary<string, string> body, int port = 9000)
+        protected async Task<string> HttpPostAsync(string endpoint, Dictionary<string, string> body, int port)
         {
             var content = new StringContent(body.FromDictionaryToJson(), Encoding.UTF8, "application/json");
 

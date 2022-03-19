@@ -85,11 +85,11 @@ namespace GraphSight.Core
         }
 
         public Task<string> PingServerAsync() => 
-            CallAPI(() => { return TigerGraphAPIClient.Instance.PingServerAsync(); });
+            CallAPI(() => { return _apiClient.PingServerAsync(); });
         public string PingServer() => PingServerAsync().Result;
 
         public Task<string> RequestTokenAsync() =>
-            CallAPI(() => { return TigerGraphAPIClient.Instance.RequestTokenAsync(); });
+            CallAPI(() => { return _apiClient.RequestTokenAsync(); });
         public string RequestToken() => RequestTokenAsync().Result;
 
         public void GenerateSchemaIfNotExists()
