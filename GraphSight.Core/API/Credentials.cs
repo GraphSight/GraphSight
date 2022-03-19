@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GraphSight.Core
 {
-    internal class TigerCredentials : ICredentials
+    internal class Credentials : ICredentials
     {
         public string Username { get; set; }
         public string Password { get; set; }

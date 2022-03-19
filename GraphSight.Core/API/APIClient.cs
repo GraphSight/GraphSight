@@ -20,25 +20,17 @@ namespace GraphSight.Core
         private AsyncRetryPolicy<HttpResponseMessage> _HTTPRetryPolicy;
 
         protected readonly HttpClient _httpClient = new HttpClient();
-        protected GraphSightClient _graphSightClient;
 
         internal void Configure(string baseURI, int maxRetries, int httpGetTimeout, int httpPostTimeout)
         {
-            this.SetMaxRetryPolicy(maxRetries);
-            this.SetDefaultGetPolicy(httpGetTimeout);
-            this.SetDefaultPostPolicy(httpPostTimeout);
+            SetMaxRetryPolicy(maxRetries);
+            SetDefaultGetPolicy(httpGetTimeout);
+            SetDefaultPostPolicy(httpPostTimeout);
 
-            if (baseURI == null) return; 
-
-            Uri validUri = null;
-            Uri.TryCreate(baseURI, UriKind.Absolute, out validUri);
-
-            _httpClient.BaseAddress = validUri ?? new UriBuilder("https", baseURI, 443, String.Empty).Uri;
+            SetURI(baseURI);
         }
 
-        protected GraphSightClient GetGraphSightClient() => _graphSightClient;
-
-        public void SetMaxRetryPolicy(int maxRetries)
+        internal void SetMaxRetryPolicy(int maxRetries)
         {
             _HTTPRetryPolicy =
                 Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
@@ -46,11 +38,11 @@ namespace GraphSight.Core
                     .RetryAsync(maxRetries);
         }
 
-        public void SetDefaultGetPolicy(int GET_timeout) {
+        internal void SetDefaultGetPolicy(int GET_timeout) {
             _HTTPGetPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(GET_timeout));           
         }
 
-        public void SetDefaultPostPolicy(int POST_timeout) {
+        internal void SetDefaultPostPolicy(int POST_timeout) {
             _HTTPPostPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(POST_timeout));
         }
 
@@ -90,6 +82,19 @@ namespace GraphSight.Core
 
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
+        }
+
+        protected void SetURI(string baseURI)
+        {
+            if (baseURI == null) {
+                _httpClient.BaseAddress = null;
+                return; 
+            }
+
+            Uri validUri = null;
+            Uri.TryCreate(baseURI, UriKind.Absolute, out validUri);
+
+            _httpClient.BaseAddress = validUri ?? new UriBuilder("https", baseURI, 443, String.Empty).Uri;
         }
 
     }
