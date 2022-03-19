@@ -57,7 +57,7 @@ namespace GraphSight.Core
             HttpResponseMessage response = await
              _HTTPRetryPolicy.ExecuteAsync(() =>
              _HTTPPostPolicy.ExecuteAsync(async token =>
-             await _httpClient.GetAsync($"{_httpClient.BaseAddress.ToString().WithoutTrailingSlash()}:{port}{endpoint}", token), CancellationToken.None));
+             await _httpClient.GetAsync(GetEnpointRequestAddress(endpoint, port), token), CancellationToken.None));
 
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
@@ -75,10 +75,15 @@ namespace GraphSight.Core
             HttpResponseMessage response = await
              _HTTPRetryPolicy.ExecuteAsync(() =>
              _HTTPPostPolicy.ExecuteAsync(async token =>
-             await _httpClient.PostAsync($"{_httpClient.BaseAddress.ToString().WithoutTrailingSlash()}:{port}{endpoint}", content, token), CancellationToken.None));
+             await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content, token), CancellationToken.None));
 
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
+        }
+
+        private string GetEnpointRequestAddress(string endpoint, int port)
+        {
+            return $"{_httpClient.BaseAddress.ToString().WithoutTrailingSlash()}:{port}{endpoint}";
         }
 
         protected void SetURI(string baseURI)
@@ -90,7 +95,7 @@ namespace GraphSight.Core
 
             Uri validUri = null;
             Uri.TryCreate(baseURI, UriKind.Absolute, out validUri);
-
+            new UriBuilder()
             _httpClient.BaseAddress = validUri ?? new UriBuilder("https", baseURI, 443, String.Empty).Uri;
         }
 

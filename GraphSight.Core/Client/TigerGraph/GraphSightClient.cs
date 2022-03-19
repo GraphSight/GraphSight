@@ -59,11 +59,16 @@ namespace GraphSight.Core
             _apiClient.SetSecret(secret);
             return this;
         }
-
-        public void SetCustomErrorHandler(Action<Exception> action) => _onErrorAction = action;
-        public void SetCustomServiceStatusIsDownAction(Action action) => _onServiceStatusIsDownAction = action;
-
-
+        public GraphSightClient SetCustomErrorHandler(Action<Exception> action)
+        { 
+            _onErrorAction = action;
+            return this; 
+        }
+        public GraphSightClient SetCustomServiceStatusIsDownAction(Action action)
+        {
+            _onServiceStatusIsDownAction = action;
+            return this; 
+        }
         public GraphSightClient WithMaxRetries(int maxRetries)
         {
             _apiClient.SetMaxRetryPolicy(maxRetries);
