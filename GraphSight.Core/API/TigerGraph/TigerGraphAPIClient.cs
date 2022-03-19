@@ -1,4 +1,5 @@
 ﻿using GraphSight.Core;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -20,8 +21,13 @@ namespace GraphSight.Core
         }
 
         internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping, 14240);
-        internal async Task<string> RequestTokenAsync() =>
-            await HttpPostAsync(TigerAPIEndpoints.RequestToken, GetCredentialBody(), DEFAULT_PORT);
+        internal async Task<string> RequestTokenAsync()
+        {
+            var result = await HttpPostAsync(TigerAPIEndpoints.RequestToken, GetCredentialBody(), DEFAULT_PORT);
+            _token = JObject.Parse(result).GetValue("token").ToString();
+            return _token;
+        }
+
         internal void SetCredentials(Credentials credentials)
         {
             _credentials = credentials;
