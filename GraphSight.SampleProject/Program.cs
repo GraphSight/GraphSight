@@ -31,7 +31,8 @@ namespace GraphSight.SampleProject
                 .WithHttpPostTimeout(45);
 
             Console.WriteLine(client.PingServerAsync().Result);
-
+            Console.WriteLine(client.RequestTokenAsync().Result);
+            Console.ReadLine();
         }
     }
 }
