@@ -30,7 +30,10 @@ namespace GraphSight.SampleProject
                 .WithHttpGetTimeout(15)
                 .WithHttpPostTimeout(45);
 
-            Console.WriteLine(client.PingServerAsync().Result);
+            Console.WriteLine(client.PingServer());
+            var a = client.PingServerAsync();
+            Console.WriteLine("test");
+            Console.WriteLine(a.Result);
             Console.WriteLine(client.RequestTokenAsync().Result);
             Console.ReadLine();
         }

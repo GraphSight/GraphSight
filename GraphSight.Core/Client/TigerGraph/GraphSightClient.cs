@@ -84,12 +84,12 @@ namespace GraphSight.Core
             throw new NotImplementedException();
         }
 
-        public Task<string> PingServerAsync() => 
-            CallAPI(() => { return _apiClient.PingServerAsync(); });
+        public async Task<string> PingServerAsync() =>
+            await CallAPI(() => { return _apiClient.PingServerAsync(); });
         public string PingServer() => PingServerAsync().Result;
 
-        public Task<string> RequestTokenAsync() =>
-            CallAPI(() => { return _apiClient.RequestTokenAsync(); });
+        public async Task<string> RequestTokenAsync() =>
+            await CallAPI(() => { return _apiClient.RequestTokenAsync(); });
         public string RequestToken() => RequestTokenAsync().Result;
 
         public void GenerateSchemaIfNotExists()
@@ -112,13 +112,13 @@ namespace GraphSight.Core
         /// This method tries the connection in order to execute user-set error handling delegates. 
         /// </summary>
         /// <param name="apiCall">API action to be called. </param>
-        private void CallAPI(Action apiCall)
+        private async void CallAPI(Action apiCall)
         {
             ValidateCredentials(); 
 
             try
             {
-                apiCall();
+                await Task.Run(() =>apiCall());
             }
             catch (Exception ex)
             {
@@ -131,22 +131,22 @@ namespace GraphSight.Core
         /// This method tries the connection in order to execute user-set error handling delegates. 
         /// Function call must contain a return to utilize this method. 
         /// </summary>
-        /// <typeparam name="T">Expected Return Type</typeparam>
+        /// <typeparam name="Task<T>">Expected Return Type</typeparam>
         /// <param name="apiCall">API action to be called.</param>
-        /// <returns></returns>
-        private T CallAPI<T>(Func<T> apiCall)
+        /// <returns>Task of return type</returns>
+        private async Task<T> CallAPI<T>(Func<Task<T>> apiCall)
         {
-            ValidateCredentials(); 
+            ValidateCredentials();
 
             try
             {
-                return apiCall();
+                return await apiCall();
             }
             catch (Exception ex)
             {
                 CallErrorDelegates(ex);
             }
-            return default; 
+            return default;
         }
 
         private void CallErrorDelegates(Exception ex)
