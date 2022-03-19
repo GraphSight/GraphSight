@@ -8,7 +8,7 @@ namespace GraphSight.Core
 {
     public class GraphSightClient : IGraphSightClient
     {
-        private TigerCredentials _credentials; 
+        private TigerCredentials _credentials;
         private Action<Exception> _onErrorAction;
         private Action _onServiceStatusIsDownAction;
 
@@ -18,7 +18,9 @@ namespace GraphSight.Core
 
         delegate Task<string> APICaller();
         public GraphSightClient() {
-            _credentials = new TigerCredentials(); 
+            _credentials = new TigerCredentials();
+
+            ConfigureAPIClient();
         }
 
         public GraphSightClient(string username, string password, string URI, string secret) {
@@ -30,34 +32,32 @@ namespace GraphSight.Core
                 Secret = secret
             };
 
-            TigerGraphAPIClient.Instance.SetCredentials(_credentials);
-            TigerGraphAPIClient.Instance
-                .Configure(
-                    baseURI: URI, 
-                    maxRetries: _DEFAULT_RETRIES,
-                    httpGetTimeout: _DEFAULT_GET_TIMEOUT,
-                    httpPostTimeout: _DEFAULT_POST_TIMEOUT);
+            ConfigureAPIClient();
         }
 
         #region public
 
         public GraphSightClient SetUsername(string username) {
-            _credentials.Username = username; 
+            _credentials.Username = username;
+            ConfigureAPIClient();
             return this; 
         }
         public GraphSightClient SetPassword(string password)
         {
             _credentials.Password = password;
+            ConfigureAPIClient();
             return this;
         }
         public GraphSightClient SetURI(string uri)
         {
             _credentials.URI = uri;
+            ConfigureAPIClient();
             return this;
         }
         public GraphSightClient SetSecret(string secret)
         {
             _credentials.Secret = secret;
+            ConfigureAPIClient();
             return this;
         }
 
@@ -105,6 +105,19 @@ namespace GraphSight.Core
 
         #region private
 
+        private void ConfigureAPIClient()
+        {
+
+            if (_credentials == null) return;
+
+            TigerGraphAPIClient.Instance.SetCredentials(_credentials);
+            TigerGraphAPIClient.Instance
+                .Configure(
+                    baseURI: _credentials.URI,
+                    maxRetries: _DEFAULT_RETRIES,
+                    httpGetTimeout: _DEFAULT_GET_TIMEOUT,
+                    httpPostTimeout: _DEFAULT_POST_TIMEOUT);
+        }
 
         /// <summary>
         /// Call API is a wrapper for any action calling an APIclient operation. 
@@ -174,6 +187,8 @@ namespace GraphSight.Core
                 throw new Exception("GraphSight Client requires a secret token. " +
                     "You can obtain the token by following instructions here: https://docs.tigergraph.com/tigergraph-server/current/user-access/managing-credentials");
         }
+
+
 
         #endregion
     }

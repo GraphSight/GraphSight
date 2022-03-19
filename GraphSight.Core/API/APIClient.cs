@@ -24,16 +24,16 @@ namespace GraphSight.Core
 
         internal void Configure(string baseURI, int maxRetries, int httpGetTimeout, int httpPostTimeout)
         {
+            this.SetMaxRetryPolicy(maxRetries);
+            this.SetDefaultGetPolicy(httpGetTimeout);
+            this.SetDefaultPostPolicy(httpPostTimeout);
+
+            if (baseURI == null) return; 
 
             Uri validUri = null;
             Uri.TryCreate(baseURI, UriKind.Absolute, out validUri);
 
             _httpClient.BaseAddress = validUri ?? new UriBuilder("https", baseURI, 443, String.Empty).Uri;
-
-            this.SetMaxRetryPolicy(maxRetries); 
-            this.SetDefaultGetPolicy(httpGetTimeout);
-            this.SetDefaultPostPolicy(httpPostTimeout);
-
         }
 
         protected GraphSightClient GetGraphSightClient() => _graphSightClient;
