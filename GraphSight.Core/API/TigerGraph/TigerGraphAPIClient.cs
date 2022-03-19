@@ -14,6 +14,11 @@ namespace GraphSight.Core
         private static readonly int DEFAULT_PORT = 9000;
         private string _token; 
         protected Credentials _credentials;
+
+        public TigerGraphAPIClient() {
+            _credentials = new Credentials();
+        }
+
         internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping, 14240);
         internal async Task<string> RequestTokenAsync() =>
             await HttpPostAsync(TigerAPIEndpoints.RequestToken, GetCredentialBody(), DEFAULT_PORT);
