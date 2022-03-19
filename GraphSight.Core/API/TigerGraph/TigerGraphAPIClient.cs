@@ -18,9 +18,9 @@ namespace GraphSight.Core
             = new Lazy<TigerGraphAPIClient>(() => new TigerGraphAPIClient());
         public static TigerGraphAPIClient Instance => lazy.Value;
 
-        internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping); 
         internal void SetCredentials(TigerCredentials credentials) => _credentials = credentials;
-        internal void HandleServiceFault() => GetGraphSightClient()?.CallServiceStatusIsDownDelegate(); 
+        internal void HandleServiceFault(Exception ex) => GetGraphSightClient()?.CallServiceStatusIsDownDelegate(); 
+        internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping); 
 
         private void ValidateCredentials() {
             if(_credentials == null) 

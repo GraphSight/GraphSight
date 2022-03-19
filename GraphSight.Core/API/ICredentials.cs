@@ -8,7 +8,7 @@ namespace GraphSight.Core
     {
         string Username{ get; set; }
         string Password { get; set; }
-        string Domain { get; set; }
+        string URI { get; set; }
         string Secret { get; set; }
     }
 }

@@ -12,15 +12,25 @@ namespace GraphSight.SampleProject
     {
         static void Main(string[] args)
         {
-            GraphSightClient client = new GraphSightClient(
-                username: "tigergraph", 
-                password: "", 
-                URI: "https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.io", 
-                secret: "");
+            //GraphSightClient client = new GraphSightClient(
+            //    username: "tigergraph", 
+            //    password: "123456", 
+            //    URI: "https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.io", 
+            //    secret: "pp4gfpbhrh4nsrq7hm4m7h84ujrc6of1")
+            //    .WithMaxRetries(3)
+            //    .WithHttpGetTimeout(15)
+            //    .WithHttpPostTimeout(45);
 
-            string resp = client.PingServer();
-            var a = "";
+            GraphSightClient client = new GraphSightClient()
+                .SetUsername("tigergraph")
+                .SetPassword("123456")
+                .SetURI("https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.io")
+                .SetSecret("pp4gfpbhrh4nsrq7hm4m7h84ujrc6of1")
+                .WithMaxRetries(3)
+                .WithHttpGetTimeout(15)
+                .WithHttpPostTimeout(45);
 
+            Console.WriteLine(client.PingServerAsync().Result);
 
         }
     }
