@@ -86,6 +86,7 @@ namespace GraphSight.Core
 
         public async Task<string> PingServerAsync() =>
             await CallAPI(() => { return _apiClient.PingServerAsync(); });
+
         public string PingServer() => PingServerAsync().Result;
 
         public async Task<string> RequestTokenAsync() =>
@@ -153,7 +154,7 @@ namespace GraphSight.Core
         {
             if (ResponseIsServerStatusError(ex))
                 CallServiceStatusIsDownDelegate();
-            else if (_onErrorAction == null)
+            else if (_onErrorAction != null)
                 CallCustomErrorHandlerDelegate(ex);
             else throw ex;
         }
