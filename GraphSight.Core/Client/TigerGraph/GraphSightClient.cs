@@ -32,7 +32,13 @@ namespace GraphSight.Core
                 Secret = secret
             };
 
-            ConfigureAPIClient();
+            TigerGraphAPIClient.Instance.SetCredentials(_credentials);
+            TigerGraphAPIClient.Instance
+                .Configure(
+                    baseURI: URI,
+                    maxRetries: _DEFAULT_RETRIES,
+                    httpGetTimeout: _DEFAULT_GET_TIMEOUT,
+                    httpPostTimeout: _DEFAULT_POST_TIMEOUT);
         }
 
         #region public
