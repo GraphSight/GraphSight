@@ -91,7 +91,7 @@ namespace GraphSight.Core
 
             Uri validUri = null;
             Uri.TryCreate(baseURI, UriKind.Absolute, out validUri);
-            new UriBuilder()
+
             _httpClient.BaseAddress = validUri ?? new UriBuilder("https", baseURI, 443, String.Empty).Uri;
         }
 
