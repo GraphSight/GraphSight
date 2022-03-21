@@ -52,8 +52,6 @@ namespace GraphSight.Core
             if (_httpClient == null)
                 throw new ArgumentNullException("HTTP client is not set.");
 
-            _httpClient.DefaultRequestHeaders.Accept.Clear();
-
             HttpResponseMessage response = await
              _HTTPRetryPolicy.ExecuteAsync(() =>
              _HTTPPostPolicy.ExecuteAsync(async token =>
@@ -69,8 +67,6 @@ namespace GraphSight.Core
 
             if (_httpClient == null)
                 throw new ArgumentNullException("HTTP client is not set.");
-
-            _httpClient.DefaultRequestHeaders.Accept.Clear();
 
             HttpResponseMessage response = await
              _HTTPRetryPolicy.ExecuteAsync(() =>

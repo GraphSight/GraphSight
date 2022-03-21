@@ -11,7 +11,7 @@ namespace GraphSight.Core
 {
     internal sealed class TigerGraphAPIClient : APIClient
     {
-        private static readonly string TOKEN_LIFETIME = "100000";  //Specifies time before a token is reset within TigerGraph.
+        private static readonly string DEFAULT_TOKEN_LIFETIME = "100000";  //Specifies time before a token is reset within TigerGraph.
         private static readonly int DEFAULT_PORT = 9000;
         private string _token; 
         protected Credentials _credentials;
@@ -36,9 +36,17 @@ namespace GraphSight.Core
         internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping, 14240);
         internal async Task<string> RequestTokenAsync()
         {
-            var result = await HttpPostAsync(TigerAPIEndpoints.RequestToken, GetCredentialBody(), DEFAULT_PORT);
+            var body = GetCredentialBody();
+            body.Add("lifetime", DEFAULT_TOKEN_LIFETIME);
+
+            if (UserSecretIsSet())
+                body.Add("", "");
+
+            var result = await HttpPostAsync(TigerAPIEndpoints.RequestToken, body, DEFAULT_PORT);
             _token = JObject.Parse(result).GetValue("token").ToString();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            
             return _token;
         }
 
