@@ -19,15 +19,6 @@ namespace GraphSight.Core
         public TigerGraphAPIClient() {
             _credentials = new Credentials();
         }
-
-        internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping, 14240);
-        internal async Task<string> RequestTokenAsync()
-        {
-            var result = await HttpPostAsync(TigerAPIEndpoints.RequestToken, GetCredentialBody(), DEFAULT_PORT);
-            _token = JObject.Parse(result).GetValue("token").ToString();
-            return _token;
-        }
-
         internal void SetCredentials(Credentials credentials)
         {
             _credentials = credentials;
@@ -36,9 +27,28 @@ namespace GraphSight.Core
         internal void SetUsername(string username) => _credentials.Username = username;
         internal void SetPassword(string password) => _credentials.Password = password;
         internal void SetSecret(string secret) => _credentials.Secret = secret;
-        internal void SetURI(string uri) {
-            _credentials.URI = uri; 
-            base.SetURI(uri); 
+        internal void SetURI(string uri)
+        {
+            _credentials.URI = uri;
+            base.SetURI(uri);
+        }
+
+        internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping, 14240);
+        internal async Task<string> RequestTokenAsync()
+        {
+            var result = await HttpPostAsync(TigerAPIEndpoints.RequestToken, GetCredentialBody(), DEFAULT_PORT);
+            _token = JObject.Parse(result).GetValue("token").ToString();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
+            return _token;
+        }
+
+        internal async Task<bool> GetNewTokenIfNotSetAsync()
+        {
+            if (_token == null) {
+                await RequestTokenAsync();
+                if (_token == null) return false;
+            }
+            return true;
         }
 
         internal void ValidateCredentials()
