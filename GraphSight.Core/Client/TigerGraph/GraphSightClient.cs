@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GraphSight.Core
 {
-    public class GraphSightClient : IGraphSightClient
+    public class GraphSightClient
     {
         TigerGraphAPIClient _apiClient; 
         private Action<Exception> _onErrorAction;
@@ -173,7 +173,6 @@ namespace GraphSight.Core
         {
             _apiClient.ValidateCredentials();
         }
-
 
 
         #endregion
