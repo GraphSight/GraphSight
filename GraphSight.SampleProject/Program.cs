@@ -24,13 +24,21 @@ namespace GraphSight.SampleProject
             GraphSightClient client = new GraphSightClient()
                 .SetUsername("tigergraph")
                 .SetPassword("123456")
-                .SetURI("https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.io")
+                .SetURI("https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.iao")
                 .SetSecret("pp4gfpbhrh4nsrq7hm4m7h84ujrc6of1")
                 .WithMaxRetries(3)
                 .WithHttpGetTimeout(15)
-                .WithHttpPostTimeout(45);
+                .WithHttpPostTimeout(45)
+                .SetCustomErrorHandler((exception) => Console.WriteLine(exception.Message));
 
-            string s = client.PingServer(); 
+            try
+            {
+
+                string s = client.PingServer(); 
+            }
+            catch {
+                var af = "";
+            }
             Console.WriteLine(client.PingServer());
             var a = client.PingServerAsync();
             Console.WriteLine("test");

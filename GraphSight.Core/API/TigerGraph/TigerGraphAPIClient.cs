@@ -19,28 +19,25 @@ namespace GraphSight.Core
         public TigerGraphAPIClient() {
             _credentials = new Credentials();
         }
-        internal void SetCredentials(Credentials credentials)
+        public void SetCredentials(Credentials credentials)
         {
             _credentials = credentials;
             base.SetURI(_credentials.URI);
         }
-        internal void SetUsername(string username) => _credentials.Username = username;
-        internal void SetPassword(string password) => _credentials.Password = password;
-        internal void SetSecret(string secret) => _credentials.Secret = secret;
-        internal void SetURI(string uri)
+        public void SetUsername(string username) => _credentials.Username = username;
+        public void SetPassword(string password) => _credentials.Password = password;
+        public void SetSecret(string secret) => _credentials.Secret = secret;
+        public void SetURI(string uri)
         {
             _credentials.URI = uri;
             base.SetURI(uri);
         }
 
-        internal async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping, 14240);
-        internal async Task<string> RequestTokenAsync()
+        public async Task<string> PingServerAsync() => await HttpGetAsync(TigerAPIEndpoints.Ping, 14240);
+        public async Task<string> RequestTokenAsync()
         {
             var body = GetCredentialBody();
             body.Add("lifetime", DEFAULT_TOKEN_LIFETIME);
-
-            if (UserSecretIsSet())
-                body.Add("", "");
 
             var result = await HttpPostAsync(TigerAPIEndpoints.RequestToken, body, DEFAULT_PORT);
             _token = JObject.Parse(result).GetValue("token").ToString();
@@ -50,7 +47,7 @@ namespace GraphSight.Core
             return _token;
         }
 
-        internal async Task<bool> GetNewTokenIfNotSetAsync()
+        public async Task<bool> GetNewTokenIfNotSetAsync()
         {
             if (_token == null) {
                 await RequestTokenAsync();
@@ -59,7 +56,7 @@ namespace GraphSight.Core
             return true;
         }
 
-        internal void ValidateCredentials()
+        public void ValidateCredentials()
         {
             if (String.IsNullOrEmpty(_credentials.URI))
                 throw new Exception("Client requires a URI of the server you want to connect to.");

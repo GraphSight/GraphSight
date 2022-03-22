@@ -1,9 +1,12 @@
 ﻿using GraphSight.Core.Extensions;
 using Polly;
+using Polly.CircuitBreaker;
+using Polly.Fallback;
 using Polly.Retry;
 using Polly.Timeout;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -13,34 +16,72 @@ namespace GraphSight.Core
 {
     internal abstract class APIClient : IApiClient
     {
+        public int MaxRetries { get; set; } = 1;
+        public int GetTimeout { get; set; }
+        public int PostTimeout { get; set; }
+
         private AsyncTimeoutPolicy<HttpResponseMessage> _HTTPGetPolicy;
         private AsyncTimeoutPolicy<HttpResponseMessage> _HTTPPostPolicy;
         private AsyncRetryPolicy<HttpResponseMessage> _HTTPRetryPolicy;
+        private AsyncCircuitBreakerPolicy _HTTPCircuitBreakerPolicy; 
 
         protected readonly HttpClient _httpClient = new HttpClient();
 
-        internal void Configure(string baseURI, int maxRetries, int httpGetTimeout, int httpPostTimeout)
+        internal void Configure(string baseURI, int maxRetries, int httpGetTimeout, int httpPostTimeout, Action<Exception> onError = null, Action onRetry = null)
         {
-            SetMaxRetryPolicy(maxRetries);
+            MaxRetries = maxRetries;
+            GetTimeout = httpGetTimeout;
+            PostTimeout = httpPostTimeout; 
+
             SetDefaultGetPolicy(httpGetTimeout);
             SetDefaultPostPolicy(httpPostTimeout);
+            SetMaxRetryPolicy(maxRetries, onRetry);
+            SetCircuitBreakerPolicy(onError);
 
             SetURI(baseURI);
         }
 
-        internal void SetMaxRetryPolicy(int maxRetries)
+        internal void SetMaxRetryPolicy(int maxRetries, Action onRetry = null)
         {
-            _HTTPRetryPolicy =
-                Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
-                    .Or<TimeoutRejectedException>()
-                    .RetryAsync(maxRetries);
+            MaxRetries = maxRetries; 
+
+            if (onRetry == null) 
+                onRetry = () => { Console.WriteLine("Testing"); };
+
+            _HTTPRetryPolicy = Policy
+                .HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+                .Or<Exception>()
+                .RetryAsync(maxRetries, (ex, retryCount) => { onRetry(); });
+        }
+
+        internal void SetCircuitBreakerPolicy(Action<Exception> onError = null)
+        {
+            if (onError == null)
+                onError = (Exception) => { };
+
+            _HTTPCircuitBreakerPolicy = Policy
+                .Handle<Exception>()
+                .CircuitBreakerAsync(
+                    exceptionsAllowedBeforeBreaking: 1,
+                    durationOfBreak: TimeSpan.FromSeconds(2),
+                    onBreak: (ex, breakDelay) =>
+                    {
+                        Console.WriteLine("hmm");
+                        onError(ex); 
+                    },
+                    onReset: () => { },
+                    onHalfOpen: () => { }
+                );
+
         }
 
         internal void SetDefaultGetPolicy(int GET_timeout) {
+            GetTimeout = GET_timeout; 
             _HTTPGetPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(GET_timeout));           
         }
 
         internal void SetDefaultPostPolicy(int POST_timeout) {
+            PostTimeout = POST_timeout;
             _HTTPPostPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(POST_timeout));
         }
 
@@ -51,13 +92,15 @@ namespace GraphSight.Core
 
             if (_httpClient == null)
                 throw new ArgumentNullException("HTTP client is not set.");
+            
 
             HttpResponseMessage response = await
-             _HTTPRetryPolicy.ExecuteAsync(() =>
-             _HTTPPostPolicy.ExecuteAsync(async token =>
-             await _httpClient.GetAsync(GetEnpointRequestAddress(endpoint, port), token), CancellationToken.None));
+             _HTTPCircuitBreakerPolicy.ExecuteAsync(() =>
+                _HTTPRetryPolicy.ExecuteAsync(() =>
+                    _HTTPPostPolicy.ExecuteAsync(async token =>
+                        await _httpClient.GetAsync(GetEnpointRequestAddress(endpoint, port), token), CancellationToken.None)));
 
-            response.EnsureSuccessStatusCode();
+            //response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
 
@@ -69,11 +112,12 @@ namespace GraphSight.Core
                 throw new ArgumentNullException("HTTP client is not set.");
 
             HttpResponseMessage response = await
-             _HTTPRetryPolicy.ExecuteAsync(() =>
-             _HTTPPostPolicy.ExecuteAsync(async token =>
-             await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content, token), CancellationToken.None));
+            _HTTPCircuitBreakerPolicy.ExecuteAsync(() => 
+                _HTTPRetryPolicy.ExecuteAsync(() =>
+                    _HTTPPostPolicy.ExecuteAsync(async token =>
+                        await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content, token), CancellationToken.None)));
 
-            response.EnsureSuccessStatusCode();
+            //response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
 

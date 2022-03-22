@@ -16,8 +16,14 @@ namespace GraphSight.Core
         private static readonly int _DEFAULT_GET_TIMEOUT = 10;
         private static readonly int _DEFAULT_POST_TIMEOUT = 30;
 
+        private string _token;
+
         public GraphSightClient() {
-            _apiClient = new TigerGraphAPIClient(); 
+            _apiClient = new TigerGraphAPIClient();
+            _apiClient.SetDefaultGetPolicy(_DEFAULT_GET_TIMEOUT);
+            _apiClient.SetDefaultPostPolicy(_DEFAULT_POST_TIMEOUT);
+            _apiClient.SetMaxRetryPolicy(_DEFAULT_RETRIES);
+            _apiClient.SetCircuitBreakerPolicy(); 
         }
 
         public GraphSightClient(string username, string password, string URI, string secret) {
@@ -35,7 +41,8 @@ namespace GraphSight.Core
                     baseURI: URI,
                     maxRetries: _DEFAULT_RETRIES,
                     httpGetTimeout: _DEFAULT_GET_TIMEOUT,
-                    httpPostTimeout: _DEFAULT_POST_TIMEOUT);
+                    httpPostTimeout: _DEFAULT_POST_TIMEOUT,
+                    onRetry: () => Console.WriteLine("retry"));
         }
 
         #region public
@@ -62,6 +69,7 @@ namespace GraphSight.Core
         public GraphSightClient SetCustomErrorHandler(Action<Exception> action)
         { 
             _onErrorAction = action;
+            _apiClient.SetCircuitBreakerPolicy(action); 
             return this; 
         }
         public GraphSightClient SetCustomServiceStatusIsDownAction(Action action)
@@ -105,12 +113,6 @@ namespace GraphSight.Core
 
         #endregion
 
-        #region Internal
-        internal void CallCustomErrorHandlerDelegate(Exception ex) => _onErrorAction?.Invoke(ex);
-        internal void CallServiceStatusIsDownDelegate() => _onServiceStatusIsDownAction?.Invoke();
-
-        #endregion
-
         #region private
 
         /// <summary>
@@ -121,15 +123,7 @@ namespace GraphSight.Core
         private async void CallAPI(Action apiCall)
         {
             ValidateCredentials(); 
-
-            try
-            {
-                await Task.Run(() =>apiCall());
-            }
-            catch (Exception ex)
-            {
-                CallErrorDelegates(ex);
-            }
+            await Task.Run(() => apiCall());
         }
 
         /// <summary>
@@ -143,25 +137,7 @@ namespace GraphSight.Core
         private async Task<T> CallAPI<T>(Func<Task<T>> apiCall)
         {
             ValidateCredentials();
-
-            try
-            {
-                return await apiCall();
-            }
-            catch (Exception ex)
-            {
-                CallErrorDelegates(ex);
-            }
-            return default;
-        }
-
-        private void CallErrorDelegates(Exception ex)
-        {
-            if (ResponseIsServerStatusError(ex))
-                CallServiceStatusIsDownDelegate();
-            else if (_onErrorAction != null)
-                CallCustomErrorHandlerDelegate(ex);
-            else throw ex;
+            return await apiCall();
         }
 
         private bool ResponseIsServerStatusError(Exception ex)
@@ -174,6 +150,11 @@ namespace GraphSight.Core
             _apiClient.ValidateCredentials();
         }
 
+        public void GetNewTokenIfNotSetAsync()
+        {
+            if (_token == null) 
+                _apiClient.RequestTokenAsync().Wait();
+        }
 
         #endregion
     }
