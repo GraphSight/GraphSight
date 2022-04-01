@@ -11,5 +11,6 @@ namespace GraphSight.Core
         public string Password { get; set; }
         public string URI { get; set; }
         public string Secret { get; set; }
+        public string GraphName { get; set; }
     }
 }

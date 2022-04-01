@@ -1,4 +1,9 @@
 ﻿using GraphSight.Core;
+using GraphSight.Core.Converters.TigerGraph;
+using GraphSight.Core.Enums.TigerGraph;
+using GraphSight.Core.Graph;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,21 +29,45 @@ namespace GraphSight.SampleProject
             GraphSightClient client = new GraphSightClient()
                 .SetUsername("tigergraph")
                 .SetPassword("123456")
-                .SetURI("https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.iao")
+                .SetURI("https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.io")
                 .SetSecret("pp4gfpbhrh4nsrq7hm4m7h84ujrc6of1")
                 .WithMaxRetries(3)
                 .WithHttpGetTimeout(15)
                 .WithHttpPostTimeout(45)
                 .SetCustomErrorHandler((exception) => Console.WriteLine(exception.Message));
 
-            try
-            {
 
-                string s = client.PingServer(); 
-            }
-            catch {
-                var af = "";
-            }
+            var k = new TigerVertexAttribute()
+            {
+                Name = "Test Attribute",
+                Value = new Dictionary<string, string>() { { "a", "b" } }
+            };
+
+            TigerVertex t = new TigerVertex()
+            {
+                Name = "Test",
+                PrimaryId = "1",
+                PrimaryIdType = PrimaryIDTypes.INT,
+                Attributes = new List<TigerVertexAttribute>() { 
+                    new TigerVertexAttribute(){ 
+                        Name = "Test Attribute",
+                        Value = new int[]{ 1, 2, 3}
+                    }
+                }
+            };
+
+            JsonSerializerSettings settings = new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented
+            };
+            settings.Converters.Add(new TigerJsonValueConverter());
+
+            //string json = JsonConvert.SerializeObject(k, settings);
+            string json = JsonConvert.SerializeObject(k, Formatting.Indented);
+            Console.WriteLine(json); 
+
+            string s = client.PingServer();
             Console.WriteLine(client.PingServer());
             var a = client.PingServerAsync();
             Console.WriteLine("test");
@@ -47,4 +76,4 @@ namespace GraphSight.SampleProject
             Console.ReadLine();
         }
     }
-}
+} 

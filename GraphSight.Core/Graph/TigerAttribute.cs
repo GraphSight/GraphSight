@@ -1,30 +1,33 @@
-﻿using GraphSight.Core.Enums.TigerGraph;
+﻿using GraphSight.Core.Converters.TigerGraph;
+using GraphSight.Core.Enums.TigerGraph;
+using Newtonsoft.Json;
 
 namespace GraphSight.Core.Graph
 {
-    internal class TigerVertexAttribute
+    public class TigerAttribute
     {
         public string Name { get; set; }
         public AttributeTypes Type { get; set; }
-        public object Value { get; set; }
-        public object DefaultValue { get; set; }
-        public bool IsIndex { get; set; }
 
-        public TigerVertexAttribute()
+        //[JsonConverter(typeof(TigerJsonValueConverter))]
+        public object Value { get; set; }
+
+        //[JsonConverter(typeof(TigerJsonValueConverter))]
+        public object DefaultValue { get; set; }
+
+        public TigerAttribute()
         {
         }
 
-        public TigerVertexAttribute(string name,
+        public TigerAttribute(string name,
             AttributeTypes type,
             object value,
-            object defaultValue,
-            bool isIndex)
+            object defaultValue)
         {
             Name = name;
             Type = type;
             Value = value;
             DefaultValue = defaultValue;
-            IsIndex = isIndex;
         }
     }
 }

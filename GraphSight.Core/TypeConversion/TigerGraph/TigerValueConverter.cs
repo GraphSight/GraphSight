@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GraphSight.Core.Converters.TigerGraph
 {
-    internal class TigerConverter : IConverter
+    internal class TigerValueConverter : IValueConverter
     {
 
         internal QueryParams ConvertQueryParameter(object value) {

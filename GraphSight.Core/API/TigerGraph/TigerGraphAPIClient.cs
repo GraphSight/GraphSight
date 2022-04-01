@@ -13,8 +13,8 @@ namespace GraphSight.Core
     {
         private static readonly string DEFAULT_TOKEN_LIFETIME = "100000";  //Specifies time before a token is reset within TigerGraph.
         private static readonly int DEFAULT_PORT = 9000;
-        private string _token; 
         protected Credentials _credentials;
+        private string _token; 
 
         public TigerGraphAPIClient() {
             _credentials = new Credentials();
@@ -27,6 +27,7 @@ namespace GraphSight.Core
         public void SetUsername(string username) => _credentials.Username = username;
         public void SetPassword(string password) => _credentials.Password = password;
         public void SetSecret(string secret) => _credentials.Secret = secret;
+        public void SetGraphName(string graphName) => _credentials.GraphName = graphName;
         public void SetURI(string uri)
         {
             _credentials.URI = uri;
@@ -47,16 +48,7 @@ namespace GraphSight.Core
             return _token;
         }
 
-        public async Task<bool> GetNewTokenIfNotSetAsync()
-        {
-            if (_token == null) {
-                await RequestTokenAsync();
-                if (_token == null) return false;
-            }
-            return true;
-        }
-
-        public void ValidateCredentials()
+        internal void ValidateCredentials()
         {
             if (String.IsNullOrEmpty(_credentials.URI))
                 throw new Exception("Client requires a URI of the server you want to connect to.");
@@ -67,6 +59,8 @@ namespace GraphSight.Core
                         " See https://docs.tigergraph.com/tigergraph-server/current/user-access/managing-credentials");
             }
         }
+
+        internal Credentials GetCredentials() => _credentials;
 
         private bool UserSecretIsSet()
         {

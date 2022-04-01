@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GraphSight.Core.Converters.TigerGraph
 {
-    interface IConverter
+    interface IValueConverter
     {
     }
 }

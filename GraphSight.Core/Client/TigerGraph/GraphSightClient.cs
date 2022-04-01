@@ -26,13 +26,14 @@ namespace GraphSight.Core
             _apiClient.SetCircuitBreakerPolicy(); 
         }
 
-        public GraphSightClient(string username, string password, string URI, string secret) {
+        public GraphSightClient(string username, string password, string URI, string secret, string graphName) {
             Credentials credentials = new Credentials()
             {
                 Username = username,
                 Password = password,
                 URI = URI,
-                Secret = secret
+                Secret = secret,
+                GraphName = graphName
             };
 
             _apiClient.SetCredentials(credentials);
@@ -65,6 +66,11 @@ namespace GraphSight.Core
         {
             _apiClient.SetSecret(secret);
             return this;
+        }
+        public GraphSightClient SetGraphName(string graphName) 
+        {
+            _apiClient.SetGraphName(graphName);
+            return this; 
         }
         public GraphSightClient SetCustomErrorHandler(Action<Exception> action)
         { 
@@ -99,17 +105,13 @@ namespace GraphSight.Core
 
         public async Task<string> PingServerAsync() =>
             await CallAPI(() => { return _apiClient.PingServerAsync(); });
-
+         
         public string PingServer() => PingServerAsync().Result;
 
         public async Task<string> RequestTokenAsync() =>
             await CallAPI(() => { return _apiClient.RequestTokenAsync(); });
         public string RequestToken() => RequestTokenAsync().Result;
 
-        public void GenerateSchemaIfNotExists()
-        {
-            throw new NotImplementedException();
-        }
 
         #endregion
 
@@ -150,12 +152,17 @@ namespace GraphSight.Core
             _apiClient.ValidateCredentials();
         }
 
-        public void GetNewTokenIfNotSetAsync()
+        private void GetNewTokenIfNotSetAsync()
         {
             if (_token == null) 
                 _apiClient.RequestTokenAsync().Wait();
         }
 
+        private void CheckGraphName() 
+        {
+            if (String.IsNullOrEmpty(_apiClient.GetCredentials().GraphName))
+                throw new Exception("A graph name must be supplied to the graph client in order to call this function.");
+        }
         #endregion
     }
 }

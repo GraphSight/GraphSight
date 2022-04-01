@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Folder Include="Interceptor\" />
+    <Folder Include="Reflection\" />
   </ItemGroup>
 
   <ItemGroup>

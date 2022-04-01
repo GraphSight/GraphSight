@@ -3,26 +3,27 @@ using System.Collections.Generic;
 
 namespace GraphSight.Core.Graph
 {
-    internal class TigerVertex
+    public class TigerVertex
     {
-        public string Name { get; set; }
-        public string PrimaryId { get; set; }
-        public PrimaryIDTypes PrimaryIdType { get; set; }
-        public List<TigerVertexAttribute> Attributes { get; set; }
+        public string Name { get; private set; }
+        public string PrimaryIdName { get; private set; }
+        public PrimaryIDTypes PrimaryIdType { get; private set; }
+        public object PrimaryId { get; private set; }
+        public List<TigerAttribute> Attributes { get; private set; } = new List<TigerAttribute>();
 
-        public TigerVertex()
-        {
-        }
-
-        public TigerVertex(string name,
-            string primaryId,
-            PrimaryIDTypes primaryIdType,
-            List<TigerVertexAttribute> attributes)
+        private TigerVertex() { }
+        internal TigerVertex(string name, string primaryIdName, PrimaryIDTypes primaryIdType)
         {
             Name = name;
-            PrimaryId = primaryId;
-            PrimaryIdType = primaryIdType;
-            Attributes = attributes;
+            PrimaryId = primaryIdName;
+            PrimaryIdType = primaryIdType; 
         }
+
+        internal void AddAttribute(TigerAttribute attribute) => Attributes.Add(attribute);
+
+        internal void ClearAtrributes() => Attributes.Clear();
+
     }
+
+    
 }
