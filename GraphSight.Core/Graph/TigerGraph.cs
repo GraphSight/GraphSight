@@ -12,11 +12,11 @@ namespace GraphSight.Core.Graph
         public List<TigerVertex> Vertices { get; private set; }
         public List<TigerEdge> Edges { get; private set; }
 
-        private GraphOptions _options; 
+        private GraphOptions _options;
 
         public TigerGraph(string name, GraphOptions graphOptions = null)
         {
-            _options = graphOptions; 
+            _options = graphOptions;
 
             Name = name;
             Vertices = new List<TigerVertex>();
@@ -24,36 +24,55 @@ namespace GraphSight.Core.Graph
         }
 
         #region PublicMethods
-        public TigerGraph AddVertex(string name, string primaryIdName, PrimaryIDTypes primaryIdType) 
-        {
-            if(GetVertexByName(name) == null)
-                Vertices.Add(new TigerVertex(name, primaryIdName, primaryIdType));
+            public TigerGraph AddVertex<T>(string name, string primaryIdName, PrimaryIDTypes primaryIdType)
+            {
+                if (GetVertexByName(name) == null) {
+                    TigerVertex vertex = new TigerVertex(name, primaryIdName, primaryIdType);
 
-            return this; 
+                    if (Utils.isPrimitive(typeof(T))) 
+                    {
+                        vertex.AddAttribute(new TigerAttribute()
+                        {
+                            DefaultValue = default(T),
+                            //Todo: finish off here. Using primitives might not work because we need a name of the attribute. Set t as object and throw if primitive? 
+                            // another consideration there would be to potentiall make the attribute data public for name and default type, let the user pass that in, and then 
+                            // utilize the values for the actual data load. 
+                            //Potentially make another class that is the schema, and leave what we have. 
+                        });
+                    }
+
+                    Vertices.Add(vertex);
+                }
+                    
+
+                return this;
+            }
+            public TigerGraph AddVertexData(string name, object data, OperationCode? opCode = null)
+            {
+                var vertex = GetVertexByName(name);
+                if (vertex == null)
+                    throw new Exception("Cannot add data to a non-existent vertex.");
+
+
+                //Todo: iterate object data using reflection to add attributes, unless the object is a primative type (check with converter)
+                //Todo: add way to index vertex
+
+                return this;
+            }
+
+            public void AddEdge(string name) { }
+            public void AddEdge(string name, TigerVertex fromVertex, TigerVertex toVertex) { }
+            public void AddEdgeData(string name, object data, OperationCode? opCode = null) { }
+
+            public void ClearVertexData(string name) { }
+            public void ClearEdgeData(string name) { }
+
+            private TigerVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
+            #endregion
+
+            #region PrivateMethods
+
+            #endregion
         }
-        public TigerGraph AddVertexData(string name, object data, OperationCode? opCode = null) 
-        {
-            var vertex = GetVertexByName(name);
-            if (vertex == null)
-                throw new Exception("Cannot add data to a non-existent vertex.");
-            
-            //Todo: iterate object data using reflection to add attributes, unless the object is a primative type (check with converter)
-
-            return this; 
-        }
-
-        public void AddEdge(string name) { }
-        public void AddEdge(string name, TigerVertex fromVertex, TigerVertex toVertex) { }
-        public void AddEdgeData(string name, object data, OperationCode? opCode = null) { }
-
-        public void ClearVertexData(string name) { }
-        public void ClearEdgeData(string name) { }
-
-        private TigerVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
-        #endregion
-
-        #region PrivateMethods
-
-        #endregion
     }
-}
+

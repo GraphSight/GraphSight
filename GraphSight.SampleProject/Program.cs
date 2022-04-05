@@ -29,46 +29,47 @@ namespace GraphSight.SampleProject
             GraphSightClient client = new GraphSightClient()
                 .SetUsername("tigergraph")
                 .SetPassword("123456")
-                .SetURI("https://f43e7c9dc64b45f592a2b9d855852124.i.tgcloud.io")
-                .SetSecret("pp4gfpbhrh4nsrq7hm4m7h84ujrc6of1")
+                .SetURI("5452ce24ca0b44a19690711d87d4f6e8.i.tgcloud.io")
+                .SetSecret("dmbthm12mhu1saa231tvoj0u9aqkj2dt")
                 .WithMaxRetries(3)
                 .WithHttpGetTimeout(15)
                 .WithHttpPostTimeout(45)
                 .SetCustomErrorHandler((exception) => Console.WriteLine(exception.Message));
 
 
-            var k = new TigerVertexAttribute()
-            {
-                Name = "Test Attribute",
-                Value = new Dictionary<string, string>() { { "a", "b" } }
-            };
+            //var k = new TigerVertexAttribute()
+            //{
+            //    Name = "Test Attribute",
+            //    Value = new Dictionary<string, string>() { { "a", "b" } }
+            //};
 
-            TigerVertex t = new TigerVertex()
-            {
-                Name = "Test",
-                PrimaryId = "1",
-                PrimaryIdType = PrimaryIDTypes.INT,
-                Attributes = new List<TigerVertexAttribute>() { 
-                    new TigerVertexAttribute(){ 
-                        Name = "Test Attribute",
-                        Value = new int[]{ 1, 2, 3}
-                    }
-                }
-            };
+            //TigerVertex t = new TigerVertex()
+            //{
+            //    Name = "Test",
+            //    PrimaryId = "1",
+            //    PrimaryIdType = PrimaryIDTypes.INT,
+            //    Attributes = new List<TigerVertexAttribute>() { 
+            //        new TigerVertexAttribute(){ 
+            //            Name = "Test Attribute",
+            //            Value = new int[]{ 1, 2, 3}
+            //        }
+            //    }
+            //};
 
-            JsonSerializerSettings settings = new JsonSerializerSettings()
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Formatting.Indented
-            };
-            settings.Converters.Add(new TigerJsonValueConverter());
+            //JsonSerializerSettings settings = new JsonSerializerSettings()
+            //{
+            //    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            //    Formatting = Formatting.Indented
+            //};
+            //settings.Converters.Add(new TigerJsonValueConverter());
 
-            //string json = JsonConvert.SerializeObject(k, settings);
-            string json = JsonConvert.SerializeObject(k, Formatting.Indented);
-            Console.WriteLine(json); 
+            ////string json = JsonConvert.SerializeObject(k, settings);
+            //string json = JsonConvert.SerializeObject(k, Formatting.Indented);
+            //Console.WriteLine(json); 
 
-            string s = client.PingServer();
+            //string s = client.PingServer();
             Console.WriteLine(client.PingServer());
+            Console.WriteLine(client.RunQuery("INTERPRET QUERY (INT a) FOR GRAPH MyGraph {PRINT a;}"));
             var a = client.PingServerAsync();
             Console.WriteLine("test");
             Console.WriteLine(a.Result);

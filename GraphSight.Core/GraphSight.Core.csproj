@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Graph\Data\" />
     <Folder Include="Interceptor\" />
     <Folder Include="Reflection\" />
   </ItemGroup>

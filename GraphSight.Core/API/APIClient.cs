@@ -1,13 +1,11 @@
-﻿using GraphSight.Core.Extensions;
-using Polly;
+﻿using Polly;
 using Polly.CircuitBreaker;
-using Polly.Fallback;
 using Polly.Retry;
 using Polly.Timeout;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,19 +43,21 @@ namespace GraphSight.Core
         {
             MaxRetries = maxRetries; 
 
-            if (onRetry == null) 
-                onRetry = () => { Console.WriteLine("Testing"); };
+            //if (onRetry == null) 
+            //    onRetry = () => { onRetry(); };
 
             _HTTPRetryPolicy = Policy
                 .HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
-                .Or<Exception>()
-                .RetryAsync(maxRetries, (ex, retryCount) => { onRetry(); });
+                .Or<Exception>() 
+                .RetryAsync(maxRetries, (ex, retryCount) => {
+                    if (onRetry != null) onRetry(); 
+                });
         }
 
         internal void SetCircuitBreakerPolicy(Action<Exception> onError = null)
         {
-            if (onError == null)
-                onError = (Exception) => { };
+            //if (onError == null)
+            //    onError = (Exception) => { };
 
             _HTTPCircuitBreakerPolicy = Policy
                 .Handle<Exception>()
@@ -66,8 +66,7 @@ namespace GraphSight.Core
                     durationOfBreak: TimeSpan.FromSeconds(2),
                     onBreak: (ex, breakDelay) =>
                     {
-                        Console.WriteLine("hmm");
-                        onError(ex); 
+                        if(onError != null) onError(ex); 
                     },
                     onReset: () => { },
                     onHalfOpen: () => { }
@@ -86,6 +85,18 @@ namespace GraphSight.Core
         }
 
         protected AsyncTimeoutPolicy<HttpResponseMessage> GetPolicy(HttpMethod httpMethod) => httpMethod == HttpMethod.Get ? _HTTPGetPolicy : _HTTPPostPolicy;
+
+        protected void SetBasicAuthentication(string user, string pass) 
+        {
+            var authenticationString = $"{user}:{pass}";
+            var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.UTF8.GetBytes(authenticationString));
+            _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + base64EncodedAuthenticationString);
+        }
+
+        protected void SetTokenAuthentication(string token) 
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
 
         protected async Task<string> HttpGetAsync(string endpoint, int port)
         {
@@ -111,11 +122,35 @@ namespace GraphSight.Core
             if (_httpClient == null)
                 throw new ArgumentNullException("HTTP client is not set.");
 
-            HttpResponseMessage response = await
-            _HTTPCircuitBreakerPolicy.ExecuteAsync(() => 
-                _HTTPRetryPolicy.ExecuteAsync(() =>
-                    _HTTPPostPolicy.ExecuteAsync(async token =>
-                        await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content, token), CancellationToken.None)));
+            HttpResponseMessage response = await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content);
+
+            //HttpResponseMessage response = await
+            //_HTTPCircuitBreakerPolicy.ExecuteAsync(() => 
+            //    _HTTPRetryPolicy.ExecuteAsync(() =>
+            //        _HTTPPostPolicy.ExecuteAsync(async token =>
+            //            await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content, token), CancellationToken.None)));
+
+            //response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        protected async Task<string> HttpPostAsync(string endpoint, string body, int port)
+        {
+            //var content = new StringContent(body, Encoding.UTF8, "application/raw");
+
+            var buffer = System.Text.Encoding.UTF8.GetBytes(body);
+            var byteContent = new ByteArrayContent(buffer);
+
+            if (_httpClient == null)
+                throw new ArgumentNullException("HTTP client is not set.");
+
+            HttpResponseMessage response = await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), byteContent);
+
+            //HttpResponseMessage response = await
+            //_HTTPCircuitBreakerPolicy.ExecuteAsync(() => 
+            //    _HTTPRetryPolicy.ExecuteAsync(() =>
+            //        _HTTPPostPolicy.ExecuteAsync(async token =>
+            //            await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content, token), CancellationToken.None)));
 
             //response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();

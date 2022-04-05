@@ -112,6 +112,14 @@ namespace GraphSight.Core
             await CallAPI(() => { return _apiClient.RequestTokenAsync(); });
         public string RequestToken() => RequestTokenAsync().Result;
 
+        public async Task<string> RunQueryAsync(string query) =>
+            await CallAPI(() => { return _apiClient.QueryAsync(query); });
+        public string RunQuery(string query) => RunQueryAsync(query).Result;
+
+        public async Task<string> RunQueryAsync(string query, Dictionary<string, object> parameters) =>
+            await CallAPI(() => { return _apiClient.QueryAsync(query, parameters); });
+        public string RunQuery(string query, Dictionary<string, object> parameters) =>
+            RunQueryAsync(query, parameters).Result;
 
         #endregion
 

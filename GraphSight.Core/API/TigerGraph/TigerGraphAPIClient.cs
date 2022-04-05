@@ -13,6 +13,7 @@ namespace GraphSight.Core
     {
         private static readonly string DEFAULT_TOKEN_LIFETIME = "100000";  //Specifies time before a token is reset within TigerGraph.
         private static readonly int DEFAULT_PORT = 9000;
+        private static readonly int GSQL_PORT = 14240;
         protected Credentials _credentials;
         private string _token; 
 
@@ -42,10 +43,41 @@ namespace GraphSight.Core
 
             var result = await HttpPostAsync(TigerAPIEndpoints.RequestToken, body, DEFAULT_PORT);
             _token = JObject.Parse(result).GetValue("token").ToString();
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
             
             return _token;
+        }
+
+        public async Task<string> QueryAsync(string query)
+        {
+            if (!UserPasswordComboAreSet())
+                throw new Exception("Username and Password are required to run a Tigergraph Query.");
+
+            SetBasicAuthentication(GetCredentials().Username, GetCredentials().Password);
+
+            var result = await HttpPostAsync(TigerAPIEndpoints.InterpretedQuery, query, GSQL_PORT);
+
+            return result; 
+        }
+
+        public async Task<string> QueryAsync(string query, Dictionary<string, object> parameters)
+        {
+            if (!UserPasswordComboAreSet())
+                throw new Exception("Username and Password are required to run a Tigergraph Query.");
+
+            StringBuilder sb = new StringBuilder("");
+
+            if (parameters.Count > 0) sb.Append("?");
+
+            foreach (var param in parameters)
+                sb.Append($"{param.Key}={param.Value}&");
+
+            string endpoint = TigerAPIEndpoints.InterpretedQuery + sb.ToString().TrimEnd('&');
+
+            SetBasicAuthentication(GetCredentials().Username, GetCredentials().Password);
+
+            var result = await HttpPostAsync(endpoint, query, GSQL_PORT);
+
+            return result;
         }
 
         internal void ValidateCredentials()
