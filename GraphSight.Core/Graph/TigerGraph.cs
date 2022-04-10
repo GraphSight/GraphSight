@@ -9,8 +9,8 @@ namespace GraphSight.Core.Graph
     public class TigerGraph
     {
         public string Name { get; private set; }
-        public List<TigerVertex> Vertices { get; private set; }
-        public List<TigerEdge> Edges { get; private set; }
+        public List<TigerSchemaVertex> Vertices { get; private set; }
+        public List<TigerSchemaEdge> Edges { get; private set; }
 
         private GraphOptions _options;
 
@@ -19,15 +19,15 @@ namespace GraphSight.Core.Graph
             _options = graphOptions;
 
             Name = name;
-            Vertices = new List<TigerVertex>();
-            Edges = new List<TigerEdge>();
+            Vertices = new List<TigerSchemaVertex>();
+            Edges = new List<TigerSchemaEdge>();
         }
 
         #region PublicMethods
             public TigerGraph AddVertex<T>(string name, string primaryIdName, PrimaryIDTypes primaryIdType)
             {
                 if (GetVertexByName(name) == null) {
-                    TigerVertex vertex = new TigerVertex(name, primaryIdName, primaryIdType);
+                    TigerSchemaVertex vertex = new TigerSchemaVertex(name, primaryIdName, primaryIdType);
 
                     if (Utils.isPrimitive(typeof(T))) 
                     {
@@ -61,13 +61,13 @@ namespace GraphSight.Core.Graph
             }
 
             public void AddEdge(string name) { }
-            public void AddEdge(string name, TigerVertex fromVertex, TigerVertex toVertex) { }
+            public void AddEdge(string name, TigerSchemaVertex fromVertex, TigerSchemaVertex toVertex) { }
             public void AddEdgeData(string name, object data, OperationCode? opCode = null) { }
 
             public void ClearVertexData(string name) { }
             public void ClearEdgeData(string name) { }
 
-            private TigerVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
+            private TigerSchemaVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
             #endregion
 
             #region PrivateMethods

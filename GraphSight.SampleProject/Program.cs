@@ -69,7 +69,7 @@ namespace GraphSight.SampleProject
 
             //string s = client.PingServer();
             Console.WriteLine(client.PingServer());
-            Console.WriteLine(client.RunQuery("INTERPRET QUERY (INT a) FOR GRAPH MyGraph {PRINT a;}"));
+            Console.WriteLine(client.RunQuery("CREATE GRAPH everythingGraph (*); CREATE GRAPH emptyGraph()"));
             var a = client.PingServerAsync();
             Console.WriteLine("test");
             Console.WriteLine(a.Result);
