@@ -7,6 +7,21 @@ namespace GraphSight.Core.QueryBuilders
 {
     internal static class SchemaQueryBuilder
     {
+        public static string CreateGraphQuery(TigerSchemaGraph graph) 
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var vertex in graph.Vertices) 
+                sb.Append(CreateVertexQuery(vertex));
+
+            foreach (var edge in graph.Edges)
+                sb.Append(CreateEdgeQuery(edge));
+
+            sb.Append($"CREATE GRAPH {graph.Name}(*)");
+
+            return sb.ToString(); 
+        }
+
         public static string CreateVertexQuery(TigerSchemaVertex vertex) {
 
             string primaryID = string.IsNullOrEmpty(vertex.PrimaryIdName) ? "" : $"PRIMARY_ID {vertex.PrimaryIdName}";

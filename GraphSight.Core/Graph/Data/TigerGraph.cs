@@ -1,5 +1,6 @@
 ﻿using GraphSight.Core.Converters.TigerGraph;
 using GraphSight.Core.Enums.TigerGraph;
+using GraphSight.Core.QueryBuilders;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -67,10 +68,10 @@ namespace GraphSight.Core.Graph
             public void ClearVertexData(string name) { }
             public void ClearEdgeData(string name) { }
 
-            private TigerSchemaVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
             #endregion
 
             #region PrivateMethods
+            private TigerSchemaVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
 
             #endregion
         }
