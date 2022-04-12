@@ -36,7 +36,7 @@ namespace GraphSight.SampleProject
                 .WithHttpPostTimeout(45)
                 .SetCustomErrorHandler((exception) => Console.WriteLine(exception.Message));
 
-            NamespaceIterator.GetTypesWithAttribute(); 
+            //NamespaceIterator.GetTypesWithAttribute(); 
             //var k = new TigerVertexAttribute()
             //{
             //    Name = "Test Attribute",

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GraphSight.Core
 {
-    public class GraphSightClient
+    public class GraphSightClient : IEventTracker
     {
         TigerGraphAPIClient _apiClient; 
         private Action<Exception> _onErrorAction;
@@ -48,18 +48,20 @@ namespace GraphSight.Core
 
         #region public
 
-        public GraphSightClient SetUsername(string username) {
+        #region Setters
+        public GraphSightClient SetUsername(string username)
+        {
             _apiClient.SetUsername(username);
-            return this; 
+            return this;
         }
         public GraphSightClient SetPassword(string password)
         {
-            _apiClient.SetPassword(password); 
+            _apiClient.SetPassword(password);
             return this;
         }
         public GraphSightClient SetURI(string uri)
         {
-            _apiClient.SetURI(uri); 
+            _apiClient.SetURI(uri);
             return this;
         }
         public GraphSightClient SetSecret(string secret)
@@ -67,45 +69,43 @@ namespace GraphSight.Core
             _apiClient.SetSecret(secret);
             return this;
         }
-        public GraphSightClient SetGraphName(string graphName) 
+        public GraphSightClient SetGraphName(string graphName)
         {
             _apiClient.SetGraphName(graphName);
-            return this; 
+            return this;
         }
         public GraphSightClient SetCustomErrorHandler(Action<Exception> action)
-        { 
+        {
             _onErrorAction = action;
-            _apiClient.SetCircuitBreakerPolicy(action); 
-            return this; 
+            _apiClient.SetCircuitBreakerPolicy(action);
+            return this;
         }
         public GraphSightClient SetCustomServiceStatusIsDownAction(Action action)
         {
             _onServiceStatusIsDownAction = action;
-            return this; 
+            return this;
         }
         public GraphSightClient WithMaxRetries(int maxRetries)
         {
             _apiClient.SetMaxRetryPolicy(maxRetries);
-            return this; 
+            return this;
         }
-        public GraphSightClient WithHttpGetTimeout(int httpGetTimeout) 
+        public GraphSightClient WithHttpGetTimeout(int httpGetTimeout)
         {
             _apiClient.SetDefaultGetPolicy(httpGetTimeout);
-            return this; 
+            return this;
         }
-        public GraphSightClient WithHttpPostTimeout(int httpPostTimeout) 
+        public GraphSightClient WithHttpPostTimeout(int httpPostTimeout)
         {
             _apiClient.SetDefaultPostPolicy(httpPostTimeout);
-            return this; 
-        } 
-
-        public void BeginTracking(Guid sessionID = new Guid()) {
-            throw new NotImplementedException();
+            return this;
         }
+        #endregion
 
+        #region APICalls
         public async Task<string> PingServerAsync() =>
             await CallAPI(() => { return _apiClient.PingServerAsync(); });
-         
+
         public string PingServer() => PingServerAsync().Result;
 
         public async Task<string> RequestTokenAsync() =>
@@ -120,6 +120,35 @@ namespace GraphSight.Core
             await CallAPI(() => { return _apiClient.QueryAsync(query, parameters); });
         public string RunQuery(string query, Dictionary<string, object> parameters) =>
             RunQueryAsync(query, parameters).Result;
+        #endregion
+
+
+        #region Tracking
+        public void Track(IVertex fromVertex, string eventName, IVertex toVertex, bool ignoreFailure = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Track(IVertex fromVertex, IEdge edge, IVertex toVertex, bool ignoreFailure = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TrackEvent(IVertex fromVertex, string eventDescription, bool ignoreFailure = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TrackEvent(IVertex fromVertex, string eventID, string eventDescription, bool ignoreFailure = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TrackError(IVertex fromVertex, Exception exception, string description = "", bool ignoreFailure = false)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
 
         #endregion
 
