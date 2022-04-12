@@ -15,29 +15,38 @@ namespace GraphSight.Core
 
     internal class NamespaceIterator
     {
-        public IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute) 
+        private Type[] _namespaceTypes; 
+        public NamespaceIterator() 
         {
-            //Get available namespace types
-            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
-            Type[] types = methodInfo.Module.Assembly.GetTypes();
+            //Declare at construction to aid performance
+            _namespaceTypes = GetNamespaceTypes(); 
+        }
 
-            IEnumerable<Type> attributeTypes = types
+        public IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute)
+        {
+            Type[] types = GetNamespaceTypes();
+
+            IEnumerable<Type> attributeTypes = _namespaceTypes
                 .Where(type => Attribute.IsDefined(type, attribute.GetType()));
 
-            return attributeTypes; 
+            return attributeTypes;
         }
 
         public IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType)
         {
+            Type[] types = GetNamespaceTypes();
 
-            //Get available namespace types
-            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
-            Type[] types = methodInfo.Module.Assembly.GetTypes();
-
-            IEnumerable<Type> interfacedImplementers = types
+            IEnumerable<Type> interfacedImplementers = _namespaceTypes
                 .Where(type => type.GetInterfaces().Contains(typeof(T)));
 
             return interfacedImplementers;
+        }
+
+        private static Type[] GetNamespaceTypes()
+        {
+            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
+            Type[] types = methodInfo.Module.Assembly.GetTypes();
+            return types;
         }
     }
 }
