@@ -7,9 +7,15 @@ using System.Text;
 
 namespace GraphSight.Core
 {
-    public class NamespaceIterator
+    internal interface INamespaceIterator 
     {
-        public static IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute) 
+        IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute);
+        IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType);
+    }
+
+    internal class NamespaceIterator
+    {
+        public IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute) 
         {
             //Get available namespace types
             MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
@@ -19,6 +25,19 @@ namespace GraphSight.Core
                 .Where(type => Attribute.IsDefined(type, attribute.GetType()));
 
             return attributeTypes; 
+        }
+
+        public IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType)
+        {
+
+            //Get available namespace types
+            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
+            Type[] types = methodInfo.Module.Assembly.GetTypes();
+
+            IEnumerable<Type> interfacedImplementers = types
+                .Where(type => type.GetInterfaces().Contains(typeof(T)));
+
+            return interfacedImplementers;
         }
     }
 }

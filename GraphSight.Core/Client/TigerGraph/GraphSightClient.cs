@@ -136,16 +136,19 @@ namespace GraphSight.Core
 
         public void TrackEvent(IVertex fromVertex, string eventDescription, bool ignoreFailure = false)
         {
+            //Dev note: This is supposed to create a new edge/vertex automatically for events
             throw new NotImplementedException();
         }
 
         public void TrackEvent(IVertex fromVertex, string eventID, string eventDescription, bool ignoreFailure = false)
         {
+            //Dev note: This is supposed to create a new edge/vertex automatically for events
             throw new NotImplementedException();
         }
 
         public void TrackError(IVertex fromVertex, Exception exception, string description = "", bool ignoreFailure = false)
         {
+            //Dev note: This is supposed to create a new edge/vertex automatically for errors
             throw new NotImplementedException();
         }
         #endregion
