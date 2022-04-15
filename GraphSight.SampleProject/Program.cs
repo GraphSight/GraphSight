@@ -67,6 +67,11 @@ namespace GraphSight.SampleProject
             //string json = JsonConvert.SerializeObject(k, Formatting.Indented);
             //Console.WriteLine(json); 
 
+            NamespaceIterator it = new NamespaceIterator();
+            
+            it.GetCallerNamespaceMethodReferences(typeof(Program).GetMethod("test", new Type[] { typeof(int) }));
+
+
             //string s = client.PingServer();
             Console.WriteLine(client.PingServer());
             Console.WriteLine(client.RunQuery("CREATE GRAPH everythingGraph (*); CREATE GRAPH emptyGraph()"));
@@ -76,5 +81,8 @@ namespace GraphSight.SampleProject
             Console.WriteLine(client.RequestTokenAsync().Result);
             Console.ReadLine();
         }
+
+        public static void test() { }
+        public static void test(int i) { }
     }
 } 

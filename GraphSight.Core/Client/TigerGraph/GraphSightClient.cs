@@ -124,31 +124,31 @@ namespace GraphSight.Core
 
 
         #region Tracking
-        public void Track(IVertex fromVertex, string eventName, IVertex toVertex, bool ignoreFailure = false)
+        public void Track(IVertex fromVertex, string eventName, IVertex toVertex)
         {
             throw new NotImplementedException();
         }
 
-        public void Track(IVertex fromVertex, IEdge edge, IVertex toVertex, bool ignoreFailure = false)
+        public void Track(IVertex fromVertex, IEdge edge, IVertex toVertex)
         {
             throw new NotImplementedException();
         }
 
-        public void TrackEvent(IVertex fromVertex, string eventDescription, bool ignoreFailure = false)
+        public void TrackEvent(IVertex fromVertex, string eventDescription)
         {
             //Dev note: This is supposed to create a new edge/vertex automatically for events
             throw new NotImplementedException();
         }
 
-        public void TrackEvent(IVertex fromVertex, string eventID, string eventDescription, bool ignoreFailure = false)
+        public void TrackEvent(IVertex fromVertex, string eventID, string eventDescription)
         {
             //Dev note: This is supposed to create a new edge/vertex automatically for events
             throw new NotImplementedException();
         }
 
-        public void TrackError(IVertex fromVertex, Exception exception, string description = "", bool ignoreFailure = false)
+        public void TrackError(IVertex fromVertex, Exception exception, string description = "")
         {
-            //Dev note: This is supposed to create a new edge/vertex automatically for errors
+            //Dev note: This is supposed to create a new edge/vertex automatically for events
             throw new NotImplementedException();
         }
         #endregion
