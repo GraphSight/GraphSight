@@ -66,10 +66,10 @@ namespace GraphSight.SampleProject
             ////string json = JsonConvert.SerializeObject(k, settings);
             //string json = JsonConvert.SerializeObject(k, Formatting.Indented);
             //Console.WriteLine(json); 
-
+            test(4);
             NamespaceIterator it = new NamespaceIterator();
-            
-            it.GetCallerNamespaceMethodReferences(typeof(Program).GetMethod("test", new Type[] { typeof(int) }));
+            it.GetMethodReferences(); 
+            var k = it.GetCallerNamespaceMethodInfos(typeof(Program).GetMethod("test", new Type[] { typeof(int) }));
 
 
             //string s = client.PingServer();

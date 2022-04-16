@@ -1,6 +1,12 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FindSymbols;
+using Microsoft.CodeAnalysis.MSBuild;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -38,7 +44,7 @@ namespace GraphSight.Core
                 .Where(type => type.GetInterfaces().Contains(typeof(T)));
         }
 
-        public IEnumerable<MethodInfo> GetCallerNamespaceMethodReferences(MethodInfo methodInfo, List<Assembly> assemblies = null)
+        public IEnumerable<MethodInfo> GetCallerNamespaceMethodInfos(MethodInfo methodInfo, List<Assembly> assemblies = null)
         {
             IEnumerable<MethodInfo> assemblyMethods = (assemblies == null) ?
                 GetAssemblyMethods(GetExternalAssembly()) : GetAssemblyMethods(assemblies);
@@ -49,7 +55,7 @@ namespace GraphSight.Core
 
         public int GetCallerNamespaceMethodCount(MethodInfo methodInfo, List<Assembly> assemblies = null)
         {
-            return GetCallerNamespaceMethodReferences(methodInfo, assemblies).Count(); 
+            return GetCallerNamespaceMethodInfos(methodInfo, assemblies).Count(); 
         }
 
         private static IEnumerable<Type> GetNamespaceTypes()
@@ -66,6 +72,78 @@ namespace GraphSight.Core
                 .GetTypes()
                 .SelectMany(s => s.GetMethods());
             return methods;
+        }
+
+        public IEnumerable<ReferencedSymbol> GetMethodReferences()
+        {
+            string assemblyPath = Directory.GetParent(GetExternalAssembly().Location).Parent.Parent.FullName;
+            string assemblyName = GetExternalAssembly().GetName().Name;
+            string projectPath = $@"{assemblyPath}\{assemblyName}.csproj";
+
+            var workspace = MSBuildWorkspace.Create();
+            var project = workspace.OpenProjectAsync(projectPath).Result;
+            project = GetProjectWithSourceFiles(project);
+
+            var compilation = project.GetCompilationAsync().Result;
+
+            var syntaxTree = compilation.SyntaxTrees.FirstOrDefault();
+
+            if (syntaxTree == null)
+                throw new Exception("Could not locate syntax tree for given assembly.");
+
+            //for reference
+            //var rootSyntaxNode = syntaxTree.GetRootAsync().Result;
+            //var firstLocalVariablesDeclaration = rootSyntaxNode.DescendantNodesAndSelf()
+            //    .OfType<LocalDeclarationStatementSyntax>().First();
+            //var firstVariable = firstLocalVariablesDeclaration.Declaration.Variables.First();
+            //var variableInitializer = firstVariable.Initializer.Value.GetFirstToken().ValueText;
+
+
+            SemanticModel model = compilation.GetSemanticModel(syntaxTree);
+            
+            var methodInvocation = syntaxTree.GetRootAsync().Result.DescendantNodes().OfType<InvocationExpressionSyntax>().Last();
+            var methodSymbol = model.GetSymbolInfo(methodInvocation).Symbol;
+
+            var references = SymbolFinder.FindReferencesAsync(methodSymbol, project.Solution).Result;
+
+            return references;
+        }
+
+        private MethodInfo GetInvocationMethodInfo(SemanticModel model, InvocationExpressionSyntax invocationExpression) 
+        {
+            var methodSymbol = model.GetSymbolInfo(invocationExpression).Symbol;
+            var declaringTypeName = string.Format(
+                "{0}.{1}",
+                methodSymbol.ContainingType.ContainingAssembly.Name,
+                methodSymbol.ContainingType.Name
+            );
+            var methodName = methodSymbol.Name;
+            var methodArgumentTypeNames = methodSymbol.Parameters.Select(
+                p => p.Type.ContainingNamespace.Name + "." + p.Type.Name
+            );
+            var methodInfo = Type.GetType(declaringTypeName).GetMethod(
+                methodName,
+                methodArgumentTypeNames.Select(typeName => Type.GetType(typeName)).ToArray()
+            );
+            return methodInfo;
+        }
+
+        private Project GetProjectWithSourceFiles(Project project)
+        {
+            string projectDirectory = Directory.GetParent(project.FilePath).FullName;
+            var files = GetAllSourceFiles(projectDirectory);
+
+            foreach(var file in files) 
+                project = project.AddDocument(file, File.ReadAllText(file)).Project;
+
+            return project;
+        }
+
+        private IEnumerable<string> GetAllSourceFiles(string directoryPath)
+        {
+            var res = Directory.GetFiles(directoryPath, "*.cs", SearchOption.AllDirectories);
+
+            return res;
         }
 
         /// <summary>
