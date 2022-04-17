@@ -58,6 +58,12 @@ namespace GraphSight.Core.GraphBuilders
                 graph = AddErrorVertex(graph); 
             }
 
+            foreach (var dataInsert in dataInserts)
+            { 
+
+            }
+
+
             //From here on out: check parameters of each events/inserts, use them to build additional edges. 
             //Any GraphDataInsert with an event name as string will create a very generic edge. 
 

@@ -86,6 +86,10 @@ namespace GraphSight.Core
                     .OfType<InvocationExpressionSyntax>()
                     .ToList();
 
+                //Test: 
+                //var test = GetMethodInvocationsByName(invokedMethods, "testMethod").First();
+                //var test2 = GetInvocationMethodParameterTypes(assembly, model, test); 
+
                 methodList.AddRange(invokedMethods);
             }
 
@@ -95,6 +99,25 @@ namespace GraphSight.Core
         public IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByName(IEnumerable<InvocationExpressionSyntax> methodInvocations, string methodName)
         {
             return methodInvocations.Where(s => s.Expression.GetText().ToString().Contains(methodName));
+        }
+
+        public List<Type> GetInvocationMethodParameterTypes(Assembly assembly, SemanticModel model, InvocationExpressionSyntax invocationExpression)
+        {
+            var methodSymbol = model.GetSymbolInfo(invocationExpression).Symbol;
+            var declaringTypeName = string.Format(
+                "{0}.{1}",
+                methodSymbol.ContainingType.ContainingAssembly.Name,
+                methodSymbol.ContainingType.Name
+            );
+            var methodName = methodSymbol.Name;
+
+            List<Type> methodArgumentTypes = ((IMethodSymbol)methodSymbol)
+                .Parameters
+                .Select(p => assembly.GetType($"{p.Type.ContainingNamespace}.{ p.Type.Name}"))
+                .ToList();
+
+            return methodArgumentTypes;
+
         }
 
         private string GetAssemblyProjectPath(Assembly assembly)
@@ -109,29 +132,6 @@ namespace GraphSight.Core
             string projectPath = $@"{assemblyPath}\{assemblyName}.csproj";
 
             return projectPath;
-        }
-
-        private MethodInfo GetInvocationMethodInfo(SemanticModel model, InvocationExpressionSyntax invocationExpression) 
-        {
-            var methodSymbol = model.GetSymbolInfo(invocationExpression).Symbol;
-            var declaringTypeName = string.Format(
-                "{0}.{1}",
-                methodSymbol.ContainingType.ContainingAssembly.Name,
-                methodSymbol.ContainingType.Name
-            );
-            var methodName = methodSymbol.Name;
-            var methodArgumentTypeNames = ((IMethodSymbol)methodSymbol).Parameters.Select(
-                p => p.Type.ContainingNamespace.Name + "." + p.Type.Name
-            );
-
-            var a = Type.GetType(declaringTypeName);
-            var b = a.GetMethod(methodName);
-
-            var methodInfo = Type.GetType(declaringTypeName).GetMethod(
-                methodName,
-                methodArgumentTypeNames.Select(typeName => Type.GetType(typeName)).ToArray()
-            );
-            return methodInfo;
         }
 
         private static IEnumerable<Type> GetNamespaceTypes()

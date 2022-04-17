@@ -2,6 +2,7 @@
 using GraphSight.Core.Converters.TigerGraph;
 using GraphSight.Core.Enums.TigerGraph;
 using GraphSight.Core.Graph;
+using GraphSight.SampleProject.Vertices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -66,9 +67,14 @@ namespace GraphSight.SampleProject
             ////string json = JsonConvert.SerializeObject(k, settings);
             //string json = JsonConvert.SerializeObject(k, Formatting.Indented);
             //Console.WriteLine(json); 
-            test(4);
+            TestVertex tss = new TestVertex();
+            testMethod(tss);
+
             NamespaceAnalyzer it = new NamespaceAnalyzer();
-            it.GetMethodReferences(); 
+            var list = it.GetMethodInvocationsByAssembly();
+            list = it.GetMethodInvocationsByName(list, "testMethod");
+            var kk = list.First().Expression;
+            var jj = list.First().ArgumentList; 
             var k = it.GetCallerNamespaceMethodInfos(typeof(Program).GetMethod("test", new Type[] { typeof(int) }));
 
 
@@ -83,7 +89,9 @@ namespace GraphSight.SampleProject
             client.TigerGraphDataInsert(null, "", null);
         }
 
-        public static void test() { }
+        public static void testMethod(TestVertex t) { }
         public static void test(int i) { }
     }
+
+    
 } 
