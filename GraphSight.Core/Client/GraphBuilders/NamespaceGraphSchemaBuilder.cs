@@ -15,16 +15,16 @@ namespace GraphSight.Core.GraphBuilders
         public bool HasErrorHandling { get; set; }
         public bool HasEventTracking { get; set; }
 
-        private NamespaceIterator _namespaceIterator;
+        private NamespaceAnalyzer _namespaceIterator;
 
         public NamespaceGraphSchemaBuilder() 
         {
-            _namespaceIterator = new NamespaceIterator(); 
+            _namespaceIterator = new NamespaceAnalyzer(); 
         }
 
         public void CheckNamespace(Assembly assembly) 
         {
-            NamespaceIterator namespaceIterator = new NamespaceIterator();
+            NamespaceAnalyzer namespaceIterator = new NamespaceAnalyzer();
 
             var eventMethods = typeof(IEventTracker).GetMethods();
 

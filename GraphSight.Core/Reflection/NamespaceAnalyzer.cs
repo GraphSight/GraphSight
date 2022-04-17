@@ -14,15 +14,16 @@ using System.Text;
 
 namespace GraphSight.Core
 {
-    public interface INamespaceIterator 
+    public interface INamespaceAnalyzer 
     {
-        IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute);
-        IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType);
+        IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute, List<Assembly> assemblies);
+        IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType, List<Assembly> assemblies);
+        IEnumerable<ReferencedSymbol> GetMethodReferences(List<Assembly> assemblies);
     }
 
-    public class NamespaceIterator
+    public class NamespaceAnalyzer
     {
-        public NamespaceIterator() 
+        public NamespaceAnalyzer() 
         {
         }
 
@@ -58,55 +59,59 @@ namespace GraphSight.Core
             return GetCallerNamespaceMethodInfos(methodInfo, assemblies).Count(); 
         }
 
-        private static IEnumerable<Type> GetNamespaceTypes()
+        private IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByAssembly(List<Assembly> assemblies = null) 
         {
-            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
-            IEnumerable<Type> types = methodInfo.Module.Assembly.GetTypes();
-            return types;
+            if (assemblies == null)
+                assemblies = new List<Assembly>() { GetExternalAssembly() };
+
+            List<InvocationExpressionSyntax> methodList = new List<InvocationExpressionSyntax>();
+
+            foreach (var assembly in assemblies) 
+            {
+                string projectPath = GetAssemblyProjectPath(assembly);
+
+                var workspace = MSBuildWorkspace.Create();
+                var project = workspace.OpenProjectAsync(projectPath).Result;
+                project = GetProjectWithSourceFiles(project);
+
+                var compilation = project.GetCompilationAsync().Result;
+
+                var syntaxTree = compilation.SyntaxTrees.FirstOrDefault();
+
+                if (syntaxTree == null)
+                    throw new Exception("Could not locate syntax tree for given assembly.");
+
+                SemanticModel model = compilation.GetSemanticModel(syntaxTree);
+
+                var invokedMethods = syntaxTree
+                    .GetRootAsync().Result
+                    .DescendantNodes()
+                    .OfType<InvocationExpressionSyntax>()
+                    .ToList();
+
+                methodList.AddRange(invokedMethods);
+            }
+
+            return methodList; 
         }
 
-        private static IEnumerable<MethodInfo> GetNamespaceMethods() 
+        private string GetAssemblyProjectPath(Assembly assembly)
         {
-            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
-            IEnumerable<MethodInfo> methods = methodInfo.Module.Assembly
-                .GetTypes()
-                .SelectMany(s => s.GetMethods());
-            return methods;
-        }
+            string assemblyPath = Directory
+                .GetParent(assembly.Location)
+                .Parent
+                .Parent
+                .FullName;
 
-        public IEnumerable<ReferencedSymbol> GetMethodReferences()
-        {
-            string assemblyPath = Directory.GetParent(GetExternalAssembly().Location).Parent.Parent.FullName;
             string assemblyName = GetExternalAssembly().GetName().Name;
             string projectPath = $@"{assemblyPath}\{assemblyName}.csproj";
 
-            var workspace = MSBuildWorkspace.Create();
-            var project = workspace.OpenProjectAsync(projectPath).Result;
-            project = GetProjectWithSourceFiles(project);
+            return projectPath;
+        }
 
-            var compilation = project.GetCompilationAsync().Result;
-
-            var syntaxTree = compilation.SyntaxTrees.FirstOrDefault();
-
-            if (syntaxTree == null)
-                throw new Exception("Could not locate syntax tree for given assembly.");
-
-            //for reference
-            //var rootSyntaxNode = syntaxTree.GetRootAsync().Result;
-            //var firstLocalVariablesDeclaration = rootSyntaxNode.DescendantNodesAndSelf()
-            //    .OfType<LocalDeclarationStatementSyntax>().First();
-            //var firstVariable = firstLocalVariablesDeclaration.Declaration.Variables.First();
-            //var variableInitializer = firstVariable.Initializer.Value.GetFirstToken().ValueText;
-
-
-            SemanticModel model = compilation.GetSemanticModel(syntaxTree);
-            
-            var methodInvocation = syntaxTree.GetRootAsync().Result.DescendantNodes().OfType<InvocationExpressionSyntax>().Last();
-            var methodSymbol = model.GetSymbolInfo(methodInvocation).Symbol;
-
-            var references = SymbolFinder.FindReferencesAsync(methodSymbol, project.Solution).Result;
-
-            return references;
+        private IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByName(IEnumerable<InvocationExpressionSyntax> methodInvocations, string methodName)
+        {
+            return methodInvocations.Where(s => s.Expression.GetText().ToString().Contains(methodName));
         }
 
         private MethodInfo GetInvocationMethodInfo(SemanticModel model, InvocationExpressionSyntax invocationExpression) 
@@ -118,14 +123,34 @@ namespace GraphSight.Core
                 methodSymbol.ContainingType.Name
             );
             var methodName = methodSymbol.Name;
-            var methodArgumentTypeNames = methodSymbol.Parameters.Select(
+            var methodArgumentTypeNames = ((IMethodSymbol)methodSymbol).Parameters.Select(
                 p => p.Type.ContainingNamespace.Name + "." + p.Type.Name
             );
+
+            var a = Type.GetType(declaringTypeName);
+            var b = a.GetMethod(methodName);
+
             var methodInfo = Type.GetType(declaringTypeName).GetMethod(
                 methodName,
                 methodArgumentTypeNames.Select(typeName => Type.GetType(typeName)).ToArray()
             );
             return methodInfo;
+        }
+
+        private static IEnumerable<Type> GetNamespaceTypes()
+        {
+            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
+            IEnumerable<Type> types = methodInfo.Module.Assembly.GetTypes();
+            return types;
+        }
+
+        private static IEnumerable<MethodInfo> GetNamespaceMethods()
+        {
+            MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
+            IEnumerable<MethodInfo> methods = methodInfo.Module.Assembly
+                .GetTypes()
+                .SelectMany(s => s.GetMethods());
+            return methods;
         }
 
         private Project GetProjectWithSourceFiles(Project project)
@@ -152,11 +177,13 @@ namespace GraphSight.Core
         /// <returns></returns>
         private Assembly GetExternalAssembly() 
         {
-            return new StackTrace()
+            Assembly externalAssembly = new StackTrace()
                 .GetFrames()
                 .Where(s => s.GetMethod().Module.Assembly != Assembly.GetExecutingAssembly())
                 .Select(s => s.GetMethod().Module.Assembly)
-                .FirstOrDefault(); 
+                .FirstOrDefault();
+
+            return externalAssembly ?? Assembly.GetExecutingAssembly(); 
         }
 
         private IEnumerable<Type> GetAssemblyTypes(Assembly assembly) => assembly.GetTypes();

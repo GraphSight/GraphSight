@@ -67,7 +67,7 @@ namespace GraphSight.SampleProject
             //string json = JsonConvert.SerializeObject(k, Formatting.Indented);
             //Console.WriteLine(json); 
             test(4);
-            NamespaceIterator it = new NamespaceIterator();
+            NamespaceAnalyzer it = new NamespaceAnalyzer();
             it.GetMethodReferences(); 
             var k = it.GetCallerNamespaceMethodInfos(typeof(Program).GetMethod("test", new Type[] { typeof(int) }));
 
@@ -79,7 +79,8 @@ namespace GraphSight.SampleProject
             Console.WriteLine("test");
             Console.WriteLine(a.Result);
             Console.WriteLine(client.RequestTokenAsync().Result);
-            Console.ReadLine();
+            test(5);
+            client.Track(null, "", null);
         }
 
         public static void test() { }
