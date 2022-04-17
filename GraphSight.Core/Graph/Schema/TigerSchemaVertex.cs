@@ -9,7 +9,7 @@ namespace GraphSight.Core.Graph
         public string PrimaryIdName { get; private set; }
         public PrimaryIDTypes PrimaryIdType { get; private set; }
         public object PrimaryId { get; private set; }
-        public List<TigerAttribute> Attributes { get; private set; } = new List<TigerAttribute>();
+        public List<TigerSchemaAttribute> Attributes { get; private set; } = new List<TigerSchemaAttribute>();
 
         private TigerSchemaVertex() { }
         internal TigerSchemaVertex(string name, string primaryIdName, PrimaryIDTypes primaryIdType)
@@ -19,7 +19,7 @@ namespace GraphSight.Core.Graph
             PrimaryIdType = primaryIdType; 
         }
 
-        internal void AddAttribute(TigerAttribute attribute) => Attributes.Add(attribute);
+        internal void AddAttribute(TigerSchemaAttribute attribute) => Attributes.Add(attribute);
 
         internal void ClearAtrributes() => Attributes.Clear();
 

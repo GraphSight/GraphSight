@@ -46,7 +46,7 @@ namespace GraphSight.Core.QueryBuilders
             return query; 
         }
 
-        public static string GetAttributesAsString(List<TigerAttribute> attributes) {
+        public static string GetAttributesAsString(List<TigerSchemaAttribute> attributes) {
 
             StringBuilder sb = new StringBuilder(); 
 

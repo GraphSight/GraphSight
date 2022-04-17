@@ -10,7 +10,7 @@ namespace GraphSight.Core.Graph
         public string ReverseEdge { get; private set; }
         public TigerSchemaVertex FromVertex { get; set; }
         public TigerSchemaVertex ToVertex { get; set; }
-        public List<TigerAttribute> Attributes { get; private set; } = new List<TigerAttribute>();
+        public List<TigerSchemaAttribute> Attributes { get; private set; } = new List<TigerSchemaAttribute>();
 
         private TigerSchemaEdge()
         {
@@ -25,7 +25,7 @@ namespace GraphSight.Core.Graph
             ReverseEdge = reverseEdge;
         }
 
-        public void AddAttribute(TigerAttribute attribute) => Attributes.Add(attribute);
+        public void AddAttribute(TigerSchemaAttribute attribute) => Attributes.Add(attribute);
         public void ClearAtrributes() => Attributes.Clear();
     }
 

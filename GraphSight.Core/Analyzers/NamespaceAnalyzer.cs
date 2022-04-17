@@ -17,13 +17,13 @@ namespace GraphSight.Core
     public interface INamespaceAnalyzer 
     {
         IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute, List<Assembly> assemblies);
-        IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType, List<Assembly> assemblies);
+        IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(List<Assembly> assemblies);
         IEnumerable<MethodInfo> GetCallerNamespaceMethodInfos(MethodInfo methodInfo, List<Assembly> assemblies);
-        IEnumerable<ReferencedSymbol> GetMethodInvocationsByAssembly(List<Assembly> assemblies);
+        IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByAssembly(List<Assembly> assemblies);
         IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByName(IEnumerable<InvocationExpressionSyntax> methodInvocations, string methodName);
     }
 
-    public class NamespaceAnalyzer
+    public class NamespaceAnalyzer : INamespaceAnalyzer
     {
         public NamespaceAnalyzer() 
         {
@@ -38,7 +38,7 @@ namespace GraphSight.Core
                 .Where(type => Attribute.IsDefined(type, attribute.GetType()));
         }
 
-        public IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType, List<Assembly> assemblies = null)
+        public IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(List<Assembly> assemblies = null)
         {
             IEnumerable<Type> assemblyTypes = (assemblies == null) ? 
                 GetAssemblyTypes(GetExternalAssembly()) : GetAssemblyTypes(assemblies);

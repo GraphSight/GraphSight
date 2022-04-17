@@ -32,7 +32,7 @@ namespace GraphSight.Core.Graph
 
                     if (Utils.isPrimitive(typeof(T))) 
                     {
-                        vertex.AddAttribute(new TigerAttribute()
+                        vertex.AddAttribute(new TigerSchemaAttribute()
                         {
                             DefaultValue = default(T),
                             //Todo: finish off here. Using primitives might not work because we need a name of the attribute. Set t as object and throw if primitive? 

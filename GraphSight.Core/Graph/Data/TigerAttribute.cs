@@ -12,22 +12,17 @@ namespace GraphSight.Core.Graph
         //[JsonConverter(typeof(TigerJsonValueConverter))]
         public object Value { get; set; }
 
-        //[JsonConverter(typeof(TigerJsonValueConverter))]
-        public object DefaultValue { get; set; }
-
         public TigerAttribute()
         {
         }
 
         public TigerAttribute(string name,
             AttributeTypes type,
-            object value,
-            object defaultValue)
+            object value)
         {
             Name = name;
             Type = type;
             Value = value;
-            DefaultValue = defaultValue;
         }
     }
 }

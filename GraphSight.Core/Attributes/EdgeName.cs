@@ -14,5 +14,7 @@ namespace GraphSight.Core
         {
             _name = name;
         }
+
+        public string GetName() => _name;
     }
 }

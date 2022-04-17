@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GraphSight.Core
 {
-    [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
     public class GraphAttribute : Attribute
     {
     }

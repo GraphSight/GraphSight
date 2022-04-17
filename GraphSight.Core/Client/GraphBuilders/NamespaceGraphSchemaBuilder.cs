@@ -1,5 +1,9 @@
-﻿using System;
+﻿using GraphSight.Core.Converters.TigerGraph;
+using GraphSight.Core.Enums.TigerGraph;
+using GraphSight.Core.Graph;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -15,18 +19,28 @@ namespace GraphSight.Core.GraphBuilders
         public bool HasErrorHandling { get; set; }
         public bool HasEventTracking { get; set; }
 
-        private NamespaceAnalyzer _namespaceIterator;
+        private INamespaceAnalyzer _namespaceIterator;
+        private IValueConverter _valueConverter;
 
         public NamespaceGraphSchemaBuilder() 
         {
-            _namespaceIterator = new NamespaceAnalyzer(); 
+            _namespaceIterator = new NamespaceAnalyzer();
+            _valueConverter = new TigerValueConverter(); 
+
         }
 
-        public void CheckNamespace(Assembly assembly) 
+        public void CheckNamespace(string graphName, List<Assembly> assemblies = null)
         {
-            NamespaceAnalyzer namespaceIterator = new NamespaceAnalyzer();
+            NamespaceAnalyzer analyzer = new NamespaceAnalyzer();
 
             var eventMethods = typeof(IEventTracker).GetMethods();
+
+            TigerSchemaGraph graph = new TigerSchemaGraph(graphName);
+
+            graph = AddVertices(graph, assemblies, analyzer);
+            graph = AddEdges(graph, assemblies, analyzer);
+
+
 
             //TODO: 
             //First, call the namespaceiterator GetCallerNamespaceTypesImplementingInterface<T> to find ALL class implementing 
@@ -42,6 +56,127 @@ namespace GraphSight.Core.GraphBuilders
             //namespaceIterator.GetCallerNamespaceMethodReferences(typeof(GraphSightClient).GetMethod("TrackEvent", new Type[] { typeof(IVertex), typeof(string) }));
             //^^ Basically this would get an instance of that call with TWO DEFINED PARAMETERS.
 
+        }
+
+        private TigerSchemaGraph AddVertices(TigerSchemaGraph graph, List<Assembly> assemblies, NamespaceAnalyzer analyzer)
+        {
+            List<TigerSchemaVertex> vertices = new List<TigerSchemaVertex>(); 
+
+            List<Type> vertexTypes = analyzer
+                .GetCallerNamespaceTypesImplementingInterface<IVertex>(assemblies)
+                .Distinct()
+                .ToList();
+
+            foreach (Type vertexType in vertexTypes)
+            {
+                VertexName vertexName = (VertexName)Attribute.GetCustomAttribute(vertexType, typeof(VertexName));
+
+                PropertyInfo primaryKeyProperty = GetAttributeProperties(vertexType, typeof(PrimaryKey)).FirstOrDefault();
+                FieldInfo primaryKeyField = GetAttributeFields(vertexType, typeof(PrimaryKey)).FirstOrDefault();
+
+                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties(vertexType, typeof(GraphAttribute));
+                List<FieldInfo> graphAttributeFields = GetAttributeFields(vertexType, typeof(GraphAttribute));
+
+                if (primaryKeyProperty == null && primaryKeyField == null)
+                    throw new Exception($"Implementation of IVertex must have Primary Key for type: {vertexType.Name}");
+
+                string primaryIDName = primaryKeyProperty.Name ?? primaryKeyField.Name;
+                PrimaryIDTypes primaryIDType = _valueConverter
+                    .ConvertVertexPrimaryIDTypes(primaryKeyProperty.GetType() ?? primaryKeyField.GetType());
+
+
+                TigerSchemaVertex vertex = new TigerSchemaVertex(vertexName.GetName(), primaryIDName, primaryIDType);
+
+                List<TigerSchemaAttribute> attributes = GetTigergraphAttributes(graphAttributeProperties, graphAttributeFields);
+
+                foreach (var attribute in attributes)
+                    vertex.AddAttribute(attribute);
+
+                graph.AddVertex(vertex);
+            }
+
+            return graph; 
+        }
+
+        private TigerSchemaGraph AddEdges(TigerSchemaGraph graph, List<Assembly> assemblies, NamespaceAnalyzer analyzer)
+        {
+            List<Type> edgeTypes = analyzer
+                .GetCallerNamespaceTypesImplementingInterface<IEdge>(assemblies)
+                .Distinct()
+                .ToList();
+
+            foreach (Type edgeType in edgeTypes)
+            {
+                EdgeName edgeName = (EdgeName)Attribute.GetCustomAttribute(edgeType, typeof(EdgeName));
+
+                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties(edgeType, typeof(GraphAttribute));
+                List<FieldInfo> graphAttributeFields = GetAttributeFields(edgeType, typeof(GraphAttribute));
+
+                TigerSchemaEdge edge = new TigerSchemaEdge(edgeName.GetName());
+
+                List<TigerSchemaAttribute> attributes = GetTigergraphAttributes(graphAttributeProperties, graphAttributeFields);
+
+                foreach (var attribute in attributes)
+                    edge.AddAttribute(attribute); 
+
+                graph.AddEdge(edge);
+            }
+
+            return graph;
+        }
+
+        private List<TigerSchemaAttribute> GetTigergraphAttributes(List<PropertyInfo> attributeProperties, List<FieldInfo> attributeFields)
+        {
+            List<TigerSchemaAttribute> Attributes = new List<TigerSchemaAttribute>();
+
+            foreach (var property in attributeProperties)
+            {
+                Type type = property.PropertyType;
+                string name = property.Name;
+
+                TigerSchemaAttribute attribute = CreateAttribute(type, name);
+                Attributes.Add(attribute); 
+            }
+
+            foreach (var field in attributeFields)
+            {
+                Type type = field.FieldType;
+                string name = field.Name;
+
+                TigerSchemaAttribute attribute = CreateAttribute(type, name);
+                Attributes.Add(attribute);
+            }
+
+            return Attributes;
+
+        }
+
+        private TigerSchemaAttribute CreateAttribute(Type type, string name)
+        {
+            AttributeTypes attributeType = _valueConverter.ConvertAttribute(type);
+
+            object defaultValue = null;
+
+            if (type.IsValueType)
+                defaultValue = Activator.CreateInstance(type);
+
+            TigerSchemaAttribute attribute = new TigerSchemaAttribute(name, attributeType, defaultValue);
+            return attribute;
+        }
+
+
+        private List<PropertyInfo> GetAttributeProperties<AttributeType>(Type T, AttributeType attribute)
+        {
+            return T.GetProperties()
+                .Where(prop => prop.IsDefined(attribute.GetType(), false))
+                .ToList();
+        }
+
+        private List<FieldInfo> GetAttributeFields<AttributeType>(Type T, AttributeType attribute)
+        {
+            return T.GetFields()
+                .Where(prop => prop.IsDefined(attribute.GetType(), false))
+                .ToList();
         }
     }
 }

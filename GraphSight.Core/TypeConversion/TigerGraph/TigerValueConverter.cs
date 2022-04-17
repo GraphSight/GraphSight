@@ -8,9 +8,14 @@ namespace GraphSight.Core.Converters.TigerGraph
     internal class TigerValueConverter : IValueConverter
     {
 
-        internal QueryParams ConvertQueryParameter(object value) {
+        public QueryParams ConvertQueryParameter(object value)
+        {
             Type valueType = value.GetType();
+            return ConvertQueryParameter(valueType);
+        }
 
+        public QueryParams ConvertQueryParameter(Type valueType) 
+        {
             if(valueType == typeof(int)) return QueryParams.INT;
             if (valueType == typeof(uint)) return QueryParams.UINT;
             if (valueType == typeof(float)) return QueryParams.FLOAT;
@@ -23,10 +28,14 @@ namespace GraphSight.Core.Converters.TigerGraph
             throw new ArgumentException($"Object type {valueType.Name} could not be converted into a TigerGraph Query Parameter.");
         }
 
-        internal AttributeTypes ConvertVertexAttribute(object value)
+        public AttributeTypes ConvertAttribute(object value)
         {
             Type valueType = value.GetType();
+            return ConvertAttribute(valueType);
+        }
 
+        public AttributeTypes ConvertAttribute(Type valueType)
+        {
             if (valueType == typeof(int)) return AttributeTypes.INT;
             if (valueType == typeof(uint)) return AttributeTypes.UINT;
             if (valueType == typeof(bool)) return AttributeTypes.BOOL;
@@ -49,10 +58,14 @@ namespace GraphSight.Core.Converters.TigerGraph
             throw new ArgumentException($"Object type {valueType.Name} could not be converted into a TigerGraph Vertex Attribute.");
         }
 
-        internal PrimaryIDTypes ConvertVertexPrimaryIDTypes(object value)
+        public PrimaryIDTypes ConvertVertexPrimaryIDTypes(object value)
         {
             Type valueType = value.GetType();
+            return ConvertVertexPrimaryIDTypes(valueType); 
+        }
 
+        public PrimaryIDTypes ConvertVertexPrimaryIDTypes(Type valueType)
+        {
             if (valueType == typeof(char)) return PrimaryIDTypes.STRING;
             if (valueType == typeof(string)) return PrimaryIDTypes.STRING;
             if (valueType == typeof(int)) return PrimaryIDTypes.INT;
