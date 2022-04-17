@@ -16,7 +16,7 @@ namespace GraphSight.Core.Graph
 
         public TigerSchemaAttribute(string name,
             AttributeTypes type,
-            object defaultValue)
+            object defaultValue = null)
         {
             Name = name;
             Type = type;

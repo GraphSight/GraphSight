@@ -7,13 +7,14 @@ namespace GraphSight.Core
 {
     internal interface IEventTracker
     {
-        void Track(IVertex fromVertex, string eventName, IVertex toVertex);
-        void Track(IVertex fromVertex, IEdge edge, IVertex toVertex);
+        void TigerGraphDataInsert(IVertex fromVertex, string eventName, IVertex toVertex);
+        void TigerGraphDataInsert(IVertex fromVertex, IEdge edge, IVertex toVertex);
         [Event]
-        void TrackEvent(IVertex fromVertex, string eventDescription);
+        void TigerGraphTrackEvent(IVertex fromVertex, string eventDescription);
         [Event]
-        void TrackEvent(IVertex fromVertex, string eventID, string eventDescription);
+        void TigerGraphTrackEvent(IVertex fromVertex, string eventID, string eventDescription);
         [ErrorEvent]
-        void TrackError(IVertex fromVertex, Exception exception, string description = "");
+        void TigerGraphTrackError(IVertex fromVertex, Exception exception, string description = "");
     }
 }
+ 

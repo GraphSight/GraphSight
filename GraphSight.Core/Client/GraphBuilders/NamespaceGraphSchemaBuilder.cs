@@ -1,6 +1,7 @@
 ﻿using GraphSight.Core.Converters.TigerGraph;
 using GraphSight.Core.Enums.TigerGraph;
 using GraphSight.Core.Graph;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace GraphSight.Core.GraphBuilders
 
         }
 
-        public void CheckNamespace(string graphName, List<Assembly> assemblies = null)
+        public void GenerateSchema(string graphName, List<Assembly> assemblies = null)
         {
             NamespaceAnalyzer analyzer = new NamespaceAnalyzer();
 
@@ -40,9 +41,28 @@ namespace GraphSight.Core.GraphBuilders
             graph = AddVertices(graph, assemblies, analyzer);
             graph = AddEdges(graph, assemblies, analyzer);
 
+            var invocations = analyzer.GetMethodInvocationsByAssembly(assemblies);
+
+            var dataInserts = analyzer.GetMethodInvocationsByName(invocations, "TigerGraphDataInsert");
+            var trackingEvents = analyzer.GetMethodInvocationsByName(invocations, "TigerGraphTrackEvent"); ;
+            var errorEvents = analyzer.GetMethodInvocationsByName(invocations, "TigerGraphTrackError");
+
+            if (trackingEvents.Any())
+            {
+                HasEventTracking = true;
+                graph = AddEventSchema(graph); 
+            }
+            if (errorEvents.Any()) 
+            {
+                HasErrorHandling = true;
+                graph = AddErrorVertex(graph); 
+            }
+
+            //From here on out: check parameters of each events/inserts, use them to build additional edges. 
+            //Any GraphDataInsert with an event name as string will create a very generic edge. 
 
 
-            //TODO: 
+            //TODO (old instructions): 
             //First, call the namespaceiterator GetCallerNamespaceTypesImplementingInterface<T> to find ALL class implementing 
             //either IVertex or IEdge types.
             //Using these classes, create new graph nodes. Use namespace iterator GetCallerNamespaceTypesContainingAttribute
@@ -83,7 +103,6 @@ namespace GraphSight.Core.GraphBuilders
                 string primaryIDName = primaryKeyProperty.Name ?? primaryKeyField.Name;
                 PrimaryIDTypes primaryIDType = _valueConverter
                     .ConvertVertexPrimaryIDTypes(primaryKeyProperty.GetType() ?? primaryKeyField.GetType());
-
 
                 TigerSchemaVertex vertex = new TigerSchemaVertex(vertexName.GetName(), primaryIDName, primaryIDType);
 
@@ -177,6 +196,36 @@ namespace GraphSight.Core.GraphBuilders
             return T.GetFields()
                 .Where(prop => prop.IsDefined(attribute.GetType(), false))
                 .ToList();
+        }
+
+        private TigerSchemaGraph AddErrorVertex(TigerSchemaGraph graph)
+        {
+            TigerSchemaVertex vertex = new TigerSchemaVertex("ErrorEvent", "EventID", PrimaryIDTypes.STRING);
+            vertex.Attributes.Add(new TigerSchemaAttribute("Message", AttributeTypes.STRING));
+            vertex.Attributes.Add(new TigerSchemaAttribute("Source", AttributeTypes.STRING));
+            vertex.Attributes.Add(new TigerSchemaAttribute("InnerException", AttributeTypes.STRING));
+            vertex.Attributes.Add(new TigerSchemaAttribute("Timestamp", AttributeTypes.DATETIME));
+            vertex.Attributes.Add(new TigerSchemaAttribute("StackTrace", AttributeTypes.STRING));
+
+            TigerSchemaEdge edge = new TigerSchemaEdge("ThrewException", true);
+
+            graph.AddVertex(vertex);
+            graph.AddEdge(edge);
+
+            return graph;
+        }
+
+        private TigerSchemaGraph AddEventSchema(TigerSchemaGraph graph)
+        {
+            TigerSchemaVertex vertex = new TigerSchemaVertex("Event", "EventID", PrimaryIDTypes.STRING);
+            vertex.Attributes.Add(new TigerSchemaAttribute("EventDescription", AttributeTypes.STRING));
+
+            TigerSchemaEdge edge = new TigerSchemaEdge("HasEvent", true);
+
+            graph.AddVertex(vertex);
+            graph.AddEdge(edge);
+
+            return graph;
         }
     }
 }

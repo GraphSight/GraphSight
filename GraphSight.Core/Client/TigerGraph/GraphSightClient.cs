@@ -124,29 +124,29 @@ namespace GraphSight.Core
 
 
         #region Tracking
-        public void Track(IVertex fromVertex, string eventName, IVertex toVertex)
+        public void TigerGraphDataInsert(IVertex fromVertex, string eventName, IVertex toVertex)
         {
             throw new NotImplementedException();
         }
 
-        public void Track(IVertex fromVertex, IEdge edge, IVertex toVertex)
+        public void TigerGraphDataInsert(IVertex fromVertex, IEdge edge, IVertex toVertex)
         {
             throw new NotImplementedException();
         }
 
-        public void TrackEvent(IVertex fromVertex, string eventDescription)
-        {
-            //Dev note: This is supposed to create a new edge/vertex automatically for events
-            throw new NotImplementedException();
-        }
-
-        public void TrackEvent(IVertex fromVertex, string eventID, string eventDescription)
+        public void TigerGraphTrackEvent(IVertex fromVertex, string eventDescription)
         {
             //Dev note: This is supposed to create a new edge/vertex automatically for events
             throw new NotImplementedException();
         }
 
-        public void TrackError(IVertex fromVertex, Exception exception, string description = "")
+        public void TigerGraphTrackEvent(IVertex fromVertex, string eventID, string eventDescription)
+        {
+            //Dev note: This is supposed to create a new edge/vertex automatically for events
+            throw new NotImplementedException();
+        }
+
+        public void TigerGraphTrackError(IVertex fromVertex, Exception exception, string description = "")
         {
             //Dev note: This is supposed to create a new edge/vertex automatically for events
             throw new NotImplementedException();

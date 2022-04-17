@@ -80,7 +80,7 @@ namespace GraphSight.SampleProject
             Console.WriteLine(a.Result);
             Console.WriteLine(client.RequestTokenAsync().Result);
             test(5);
-            client.Track(null, "", null);
+            client.TigerGraphDataInsert(null, "", null);
         }
 
         public static void test() { }
