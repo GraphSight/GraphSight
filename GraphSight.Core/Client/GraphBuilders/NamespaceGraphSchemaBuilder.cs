@@ -32,7 +32,7 @@ namespace GraphSight.Core.GraphBuilders
 
         public void GenerateSchema(string graphName, List<Assembly> assemblies = null)
         {
-            NamespaceAnalyzer analyzer = new NamespaceAnalyzer();
+            NamespaceAnalyzer analyzer = new NamespaceAnalyzer(assemblies);
 
             var eventMethods = typeof(IEventTracker).GetMethods();
 
@@ -41,11 +41,11 @@ namespace GraphSight.Core.GraphBuilders
             graph = AddVertices(graph, assemblies, analyzer);
             graph = AddEdges(graph, assemblies, analyzer);
 
-            var invocations = analyzer.GetMethodInvocationsByAssembly(assemblies);
+            var invocations = analyzer.GetMethodInvocations();
 
-            var dataInserts = analyzer.GetMethodInvocationsByName(invocations, "TigerGraphDataInsert");
-            var trackingEvents = analyzer.GetMethodInvocationsByName(invocations, "TigerGraphTrackEvent"); ;
-            var errorEvents = analyzer.GetMethodInvocationsByName(invocations, "TigerGraphTrackError");
+            var dataInserts = analyzer.GetMethodInvocationsByName("TigerGraphDataInsert");
+            var trackingEvents = analyzer.GetMethodInvocationsByName("TigerGraphTrackEvent"); ;
+            var errorEvents = analyzer.GetMethodInvocationsByName("TigerGraphTrackError");
 
             if (trackingEvents.Any())
             {
@@ -89,7 +89,7 @@ namespace GraphSight.Core.GraphBuilders
             List<TigerSchemaVertex> vertices = new List<TigerSchemaVertex>(); 
 
             List<Type> vertexTypes = analyzer
-                .GetCallerNamespaceTypesImplementingInterface<IVertex>(assemblies)
+                .GetCallerNamespaceTypesImplementingInterface<IVertex>()
                 .Distinct()
                 .ToList();
 
@@ -126,7 +126,7 @@ namespace GraphSight.Core.GraphBuilders
         private TigerSchemaGraph AddEdges(TigerSchemaGraph graph, List<Assembly> assemblies, NamespaceAnalyzer analyzer)
         {
             List<Type> edgeTypes = analyzer
-                .GetCallerNamespaceTypesImplementingInterface<IEdge>(assemblies)
+                .GetCallerNamespaceTypesImplementingInterface<IEdge>()
                 .Distinct()
                 .ToList();
 

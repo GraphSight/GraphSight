@@ -71,8 +71,8 @@ namespace GraphSight.SampleProject
             testMethod(tss);
 
             NamespaceAnalyzer it = new NamespaceAnalyzer();
-            var list = it.GetMethodInvocationsByAssembly();
-            list = it.GetMethodInvocationsByName(list, "testMethod");
+            var list = it.GetMethodInvocations();
+            list = it.GetMethodInvocationsByName("testMethod");
             var kk = list.First().Expression;
             var jj = list.First().ArgumentList; 
             var k = it.GetCallerNamespaceMethodInfos(typeof(Program).GetMethod("test", new Type[] { typeof(int) }));
