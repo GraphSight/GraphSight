@@ -18,7 +18,9 @@ namespace GraphSight.Core
     {
         IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute, List<Assembly> assemblies);
         IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>(T interfaceType, List<Assembly> assemblies);
-        IEnumerable<ReferencedSymbol> GetMethodReferences(List<Assembly> assemblies);
+        IEnumerable<MethodInfo> GetCallerNamespaceMethodInfos(MethodInfo methodInfo, List<Assembly> assemblies);
+        IEnumerable<ReferencedSymbol> GetMethodInvocationsByAssembly(List<Assembly> assemblies);
+        IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByName(IEnumerable<InvocationExpressionSyntax> methodInvocations, string methodName);
     }
 
     public class NamespaceAnalyzer
@@ -54,12 +56,7 @@ namespace GraphSight.Core
                 .Where(m => m.MetadataToken == methodInfo.MetadataToken);
         }
 
-        public int GetCallerNamespaceMethodCount(MethodInfo methodInfo, List<Assembly> assemblies = null)
-        {
-            return GetCallerNamespaceMethodInfos(methodInfo, assemblies).Count(); 
-        }
-
-        private IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByAssembly(List<Assembly> assemblies = null) 
+        public IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByAssembly(List<Assembly> assemblies = null) 
         {
             if (assemblies == null)
                 assemblies = new List<Assembly>() { GetExternalAssembly() };
@@ -95,6 +92,11 @@ namespace GraphSight.Core
             return methodList; 
         }
 
+        public IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByName(IEnumerable<InvocationExpressionSyntax> methodInvocations, string methodName)
+        {
+            return methodInvocations.Where(s => s.Expression.GetText().ToString().Contains(methodName));
+        }
+
         private string GetAssemblyProjectPath(Assembly assembly)
         {
             string assemblyPath = Directory
@@ -107,11 +109,6 @@ namespace GraphSight.Core
             string projectPath = $@"{assemblyPath}\{assemblyName}.csproj";
 
             return projectPath;
-        }
-
-        private IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByName(IEnumerable<InvocationExpressionSyntax> methodInvocations, string methodName)
-        {
-            return methodInvocations.Where(s => s.Expression.GetText().ToString().Contains(methodName));
         }
 
         private MethodInfo GetInvocationMethodInfo(SemanticModel model, InvocationExpressionSyntax invocationExpression) 
@@ -192,7 +189,7 @@ namespace GraphSight.Core
         private IEnumerable<MethodInfo> GetAssemblyMethods(Assembly assembly) => GetAssemblyTypes(assembly).SelectMany(s => s.GetMethods());
         private IEnumerable<MethodInfo> GetAssemblyMethods(List<Assembly> assemblies) => GetAssemblyTypes(assemblies).SelectMany(s => s.GetMethods());
 
-        public MethodInfo GetExpressionMethod<T>(Expression<Func<T>> method)
+        private MethodInfo GetExpressionMethod<T>(Expression<Func<T>> method)
         {
             MethodCallExpression mce = method.Body as MethodCallExpression;
             return mce.Method; 
