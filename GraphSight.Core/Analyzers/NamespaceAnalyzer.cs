@@ -15,7 +15,7 @@ using System.Text;
 
 namespace GraphSight.Core
 {
-    public interface INamespaceAnalyzer 
+    public interface INamespaceAnalyzer
     {
         IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute);
         IEnumerable<Type> GetCallerNamespaceTypesImplementingInterface<T>();
@@ -33,7 +33,10 @@ namespace GraphSight.Core
         private Dictionary<Assembly, SyntaxTree> _syntaxTrees;
         private Dictionary<InvocationExpressionSyntax, SemanticModel> _methodInvocationModels;
 
-        public NamespaceAnalyzer(List<Assembly> assemblies = null) 
+        private SemanticModel _internalSemanticModel;
+
+
+        public NamespaceAnalyzer(List<Assembly> assemblies = null)
         {
             _assemblies = assemblies ?? new List<Assembly>() { GetExternalAssembly() };
 
@@ -41,7 +44,16 @@ namespace GraphSight.Core
             _syntaxTrees = new Dictionary<Assembly, SyntaxTree>();
             _methodInvocationModels = new Dictionary<InvocationExpressionSyntax, SemanticModel>();
 
-            foreach (var assembly in _assemblies) 
+            //Set internal model for locating internal method calls
+            //GetSemanticModel(Assembly.GetExecutingAssembly(), out _, out _internalSemanticModel);
+            var testingTree = CSharpSyntaxTree.ParseText(GetDocumentText());
+            var compilationtwo = CSharpCompilation.Create("TestCompilation", new[] { testingTree });
+            var modeltwo = compilationtwo.GetSemanticModel(testingTree);
+            _internalSemanticModel = modeltwo;
+
+
+
+            foreach (var assembly in _assemblies)
             {
                 SyntaxTree syntaxTree;
                 SemanticModel model;
@@ -86,7 +98,7 @@ namespace GraphSight.Core
                 .Where(m => m.MetadataToken == methodInfo.MetadataToken);
         }
 
-        public IEnumerable<InvocationExpressionSyntax> GetMethodInvocations() 
+        public IEnumerable<InvocationExpressionSyntax> GetMethodInvocations()
         {
             return _methodInvocationModels.Keys;
         }
@@ -130,6 +142,7 @@ namespace GraphSight.Core
 
             var workspace = MSBuildWorkspace.Create();
             var project = workspace.OpenProjectAsync(projectPath).Result;
+
             project = GetProjectWithSourceFiles(project);
 
             var compilation = project.GetCompilationAsync().Result;
@@ -155,6 +168,208 @@ namespace GraphSight.Core
             return projectPath;
         }
 
+        private string GetDocumentText()
+        {
+            return @"using GraphSight.Core;
+using System;
+            using System.Collections.Generic;
+            using System.Text;
+            using System.Threading.Tasks;
+
+namespace GraphSight.Core
+    {
+    public interface IEventTracker
+    {
+        void TigerGraphDataInsert(IVertex fromVertex, string eventName, IVertex toVertex);
+        void TigerGraphDataInsert(IVertex fromVertex, IEdge edge, IVertex toVertex);
+        [Event]
+        void TigerGraphTrackEvent(IVertex fromVertex, string eventDescription);
+        [Event]
+        void TigerGraphTrackEvent(IVertex fromVertex, string eventID, string eventDescription);
+        [ErrorEvent]
+        void TigerGraphTrackError(IVertex fromVertex, Exception exception, string description = "");
+    }
+
+        public class GraphSightClient : IEventTracker
+        {
+            TigerGraphAPIClient _apiClient;
+            private Action<Exception> _onErrorAction;
+            private Action _onServiceStatusIsDownAction;
+
+            private static readonly int _DEFAULT_RETRIES = 3;
+            private static readonly int _DEFAULT_GET_TIMEOUT = 10;
+            private static readonly int _DEFAULT_POST_TIMEOUT = 30;
+
+            private string _token;
+
+            public GraphSightClient()
+            {
+                _apiClient = new TigerGraphAPIClient();
+                _apiClient.SetDefaultGetPolicy(_DEFAULT_GET_TIMEOUT);
+                _apiClient.SetDefaultPostPolicy(_DEFAULT_POST_TIMEOUT);
+                _apiClient.SetMaxRetryPolicy(_DEFAULT_RETRIES);
+                _apiClient.SetCircuitBreakerPolicy();
+            }
+
+            #region public
+
+            #region Setters
+            public GraphSightClient SetUsername(string username)
+            {
+                _apiClient.SetUsername(username);
+                return this;
+            }
+            public GraphSightClient SetPassword(string password)
+            {
+                _apiClient.SetPassword(password);
+                return this;
+            }
+            public GraphSightClient SetURI(string uri)
+            {
+                _apiClient.SetURI(uri);
+                return this;
+            }
+            public GraphSightClient SetSecret(string secret)
+            {
+                _apiClient.SetSecret(secret);
+                return this;
+            }
+            public GraphSightClient SetGraphName(string graphName)
+            {
+                _apiClient.SetGraphName(graphName);
+                return this;
+            }
+            public GraphSightClient SetCustomErrorHandler(Action<Exception> action)
+            {
+                _onErrorAction = action;
+                _apiClient.SetCircuitBreakerPolicy(action);
+                return this;
+            }
+            public GraphSightClient SetCustomServiceStatusIsDownAction(Action action)
+            {
+                _onServiceStatusIsDownAction = action;
+                return this;
+            }
+            public GraphSightClient WithMaxRetries(int maxRetries)
+            {
+                _apiClient.SetMaxRetryPolicy(maxRetries);
+                return this;
+            }
+            public GraphSightClient WithHttpGetTimeout(int httpGetTimeout)
+            {
+                _apiClient.SetDefaultGetPolicy(httpGetTimeout);
+                return this;
+            }
+            public GraphSightClient WithHttpPostTimeout(int httpPostTimeout)
+            {
+                _apiClient.SetDefaultPostPolicy(httpPostTimeout);
+                return this;
+            }
+            #endregion
+
+            #region APICalls
+            public async Task<string> PingServerAsync() =>
+                await CallAPI(() => { return _apiClient.PingServerAsync(); });
+
+            public string PingServer() => PingServerAsync().Result;
+
+            public async Task<string> RequestTokenAsync() =>
+                await CallAPI(() => { return _apiClient.RequestTokenAsync(); });
+            public string RequestToken() => RequestTokenAsync().Result;
+
+            public async Task<string> RunQueryAsync(string query) =>
+                await CallAPI(() => { return _apiClient.QueryAsync(query); });
+            public string RunQuery(string query) => RunQueryAsync(query).Result;
+
+            public async Task<string> RunQueryAsync(string query, Dictionary<string, object> parameters) =>
+                await CallAPI(() => { return _apiClient.QueryAsync(query, parameters); });
+            public string RunQuery(string query, Dictionary<string, object> parameters) =>
+                RunQueryAsync(query, parameters).Result;
+            #endregion
+
+
+            #region Tracking
+            public void TigerGraphDataInsert(IVertex fromVertex, string eventName, IVertex toVertex)
+            {
+                //TODO: Stub
+            }
+
+            public void TigerGraphDataInsert(IVertex fromVertex, IEdge edge, IVertex toVertex)
+            {
+                //TODO: Stub
+            }
+
+            public void TigerGraphTrackEvent(IVertex fromVertex, string eventDescription)
+            {
+                //Dev note: This is supposed to create a new edge/vertex automatically for events
+                //TODO: Stub
+            }
+
+            public void TigerGraphTrackEvent(IVertex fromVertex, string eventID, string eventDescription)
+            {
+                //Dev note: This is supposed to create a new edge/vertex automatically for events
+                //TODO: Stub
+            }
+
+            public void TigerGraphTrackError(IVertex fromVertex, Exception exception, string description = "")
+            {
+                //Dev note: This is supposed to create a new edge/vertex automatically for events
+                //TODO: Stub
+            }
+            #endregion
+
+            #endregion
+
+            #region private
+
+            /// <summary>
+            /// Call API is a wrapper for any action calling an APIclient operation. 
+            /// This method tries the connection in order to execute user-set error handling delegates. 
+            /// </summary>
+            private async void CallAPI(Action apiCall)
+            {
+                ValidateCredentials();
+                await Task.Run(() => apiCall());
+            }
+
+            /// <summary>
+            ///  Call API is a wrapper for any action calling an APIclient operation. 
+            /// This method tries the connection in order to execute user-set error handling delegates. 
+            /// Function call must contain a return to utilize this method. 
+            /// </summary>
+            /// <returns>Task of return type</returns>
+            private async Task<T> CallAPI<T>(Func<Task<T>> apiCall)
+            {
+                ValidateCredentials();
+                return await apiCall();
+            }
+
+            private bool ResponseIsServerStatusError(Exception ex)
+            {
+                return false;
+            }
+
+            private void ValidateCredentials()
+            {
+                _apiClient.ValidateCredentials();
+            }
+
+            private void GetNewTokenIfNotSetAsync()
+            {
+                if (_token == null)
+                    _apiClient.RequestTokenAsync().Wait();
+            }
+
+            private void CheckGraphName()
+            {
+
+            }
+            #endregion
+        }
+    }
+";
+        }
+
         private static IEnumerable<Type> GetNamespaceTypes()
         {
             MethodBase methodInfo = new StackTrace().GetFrame(1).GetMethod();
@@ -176,7 +391,7 @@ namespace GraphSight.Core
             string projectDirectory = Directory.GetParent(project.FilePath).FullName;
             var files = GetAllSourceFiles(projectDirectory);
 
-            foreach(var file in files) 
+            foreach (var file in files)
                 project = project.AddDocument(file, File.ReadAllText(file)).Project;
 
             return project;
@@ -193,7 +408,7 @@ namespace GraphSight.Core
         /// Get the first assembly in the stack trace that is external to the calling assembly. 
         /// </summary>
         /// <returns></returns>
-        private Assembly GetExternalAssembly() 
+        private Assembly GetExternalAssembly()
         {
             Assembly externalAssembly = new StackTrace()
                 .GetFrames()
@@ -201,7 +416,7 @@ namespace GraphSight.Core
                 .Select(s => s.GetMethod().Module.Assembly)
                 .FirstOrDefault();
 
-            return externalAssembly ?? Assembly.GetExecutingAssembly(); 
+            return externalAssembly ?? Assembly.GetExecutingAssembly();
         }
 
         private IEnumerable<Type> GetAssemblyTypes(Assembly assembly) => assembly.GetTypes();
@@ -213,7 +428,7 @@ namespace GraphSight.Core
         private MethodInfo GetExpressionMethod<T>(Expression<Func<T>> method)
         {
             MethodCallExpression mce = method.Body as MethodCallExpression;
-            return mce.Method; 
+            return mce.Method;
         }
     }
 }
