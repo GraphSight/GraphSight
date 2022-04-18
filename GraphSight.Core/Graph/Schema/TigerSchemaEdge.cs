@@ -8,8 +8,7 @@ namespace GraphSight.Core.Graph
         public string Name { get; private set; }
         public bool IsDirected { get; private set; } = false;
         public string ReverseEdge { get; private set; }
-        public TigerSchemaVertex FromVertex { get; set; }
-        public TigerSchemaVertex ToVertex { get; set; }
+        public List<SourceTargetPair> sourceTargetPairs { get; private set; }
         public List<TigerSchemaAttribute> Attributes { get; private set; } = new List<TigerSchemaAttribute>();
 
         private TigerSchemaEdge()
@@ -26,7 +25,10 @@ namespace GraphSight.Core.Graph
         }
 
         public void AddAttribute(TigerSchemaAttribute attribute) => Attributes.Add(attribute);
+        public void AddSourceTargetPair(TigerSchemaVertex fromVertex, TigerSchemaVertex toVertex) 
+            => sourceTargetPairs.Add(new SourceTargetPair(fromVertex, toVertex));
         public void ClearAtrributes() => Attributes.Clear();
+        public void ClearSourceTargetPairs() => sourceTargetPairs.Clear();
     }
 
     public class SourceTargetPair

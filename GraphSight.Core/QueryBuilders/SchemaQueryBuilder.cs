@@ -12,12 +12,12 @@ namespace GraphSight.Core.QueryBuilders
             StringBuilder sb = new StringBuilder();
 
             foreach (var vertex in graph.Vertices) 
-                sb.Append(CreateVertexQuery(vertex));
+                sb.AppendLine(CreateVertexQuery(vertex.Value));
 
             foreach (var edge in graph.Edges)
-                sb.Append(CreateEdgeQuery(edge));
+                sb.AppendLine(CreateEdgeQuery(edge.Value));
 
-            sb.Append($"CREATE GRAPH {graph.Name}(*)");
+            sb.AppendLine($"CREATE GRAPH {graph.Name}(*)");
 
             return sb.ToString(); 
         }
@@ -38,10 +38,15 @@ namespace GraphSight.Core.QueryBuilders
 
             string attributes = GetAttributesAsString(edge.Attributes);
 
-            string query =  $"CREATE {directed} EDGE {edge.Name} (FROM {edge.FromVertex}, TO {edge.ToVertex}, {attributes})";
-           
-            if(string.IsNullOrEmpty(edge.ReverseEdge) && edge.IsDirected) 
-                query += $"WITH REVERSE EDGE = \"{edge.ReverseEdge}\"";
+            StringBuilder sb = new StringBuilder();
+            foreach (var sourceValuePair in edge.sourceTargetPairs)
+            {
+                sb.AppendLine($"CREATE {directed} EDGE {edge.Name} (FROM {sourceValuePair.FromVertex.Name}, TO {sourceValuePair.ToVertex.Name}, {attributes})");
+                
+                if (string.IsNullOrEmpty(edge.ReverseEdge) && edge.IsDirected)
+                    sb.Append($"WITH REVERSE EDGE = \"{edge.ReverseEdge}\"");
+            }
+            string query = sb.ToString();
 
             return query; 
         }

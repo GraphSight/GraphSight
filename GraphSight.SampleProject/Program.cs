@@ -1,4 +1,5 @@
 ﻿using GraphSight.Core;
+using GraphSight.Core.Client;
 using GraphSight.Core.Converters.TigerGraph;
 using GraphSight.Core.Enums.TigerGraph;
 using GraphSight.Core.Graph;
@@ -68,7 +69,15 @@ namespace GraphSight.SampleProject
             //string json = JsonConvert.SerializeObject(k, Formatting.Indented);
             //Console.WriteLine(json); 
             TestVertex tss = new TestVertex();
-            testMethod(tss);
+            TestAnotherVertex taa = new TestAnotherVertex();
+            TestEdge edge = new TestEdge(); 
+
+            client.TigerGraphTrackError(tss, new Exception());
+            client.TigerGraphDataInsert(tss, edge, taa);
+            client.TigerGraphTrackEvent(tss, "Click");
+
+            var schema = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchema("TestGraph");
+            var schemaQuery = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchemaAsQuery("TestGraph");
 
             NamespaceAnalyzer it = new NamespaceAnalyzer();
             var list = it.GetMethodInvocations();
@@ -88,8 +97,6 @@ namespace GraphSight.SampleProject
             test(5);
             client.TigerGraphDataInsert(null, "", null);
         }
-
-        public static void testMethod(TestVertex t) { }
         public static void test(int i) { }
     }
 

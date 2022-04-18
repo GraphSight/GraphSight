@@ -10,8 +10,8 @@ namespace GraphSight.Core.Graph
     public class TigerSchemaGraph
     {
         public string Name { get; private set; }
-        public List<TigerSchemaVertex> Vertices { get; private set; }
-        public List<TigerSchemaEdge> Edges { get; private set; }
+        public Dictionary<string, TigerSchemaVertex> Vertices { get; private set; }
+        public Dictionary<string, TigerSchemaEdge> Edges { get; private set; }
 
         private GraphOptions _options;
 
@@ -20,22 +20,35 @@ namespace GraphSight.Core.Graph
             _options = graphOptions;
 
             Name = name;
-            Vertices = new List<TigerSchemaVertex>();
-            Edges = new List<TigerSchemaEdge>();
+            Vertices = new Dictionary<string, TigerSchemaVertex>();
+            Edges = new Dictionary<string, TigerSchemaEdge>();
         }
 
         #region PublicMethods
-        public void AddVertex(TigerSchemaVertex vertex) => Vertices.Add(vertex); 
-        public void AddEdge(TigerSchemaEdge edge) => Edges.Add(edge);
+        public void AddVertex(TigerSchemaVertex vertex) => Vertices.Add(vertex.Name, vertex); 
+        public void AddEdge(TigerSchemaEdge edge) => Edges.Add(edge.Name, edge);
         public void ClearVertices() => Vertices.Clear();
-        public void ClearEdges() => Edges.Clear(); 
+        public void ClearEdges() => Edges.Clear();
 
-        public string GetGraphQuery() => SchemaQueryBuilder.CreateGraphQuery(this); 
+        public string GetGraphQuery() => SchemaQueryBuilder.CreateGraphQuery(this);
         #endregion
 
-        #region PrivateMethods
-        private TigerSchemaVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
-        #endregion
+        #region InternalMethods
+        internal void UpdateVertex(TigerSchemaVertex vertex)
+        {
+            if (Vertices.ContainsKey(vertex.Name))
+                Vertices[vertex.Name] = vertex;
+            else
+                Vertices.Add(vertex.Name, vertex);
         }
+        internal void UpdateEdge(TigerSchemaEdge edge)
+        {
+            if (Edges.ContainsKey(edge.Name))
+                Edges[edge.Name] = edge;
+            else
+                Edges.Add(edge.Name, edge); 
+        }
+        #endregion
     }
+}
 

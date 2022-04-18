@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.MSBuild;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,15 +22,16 @@ namespace GraphSight.Core
         IEnumerable<MethodInfo> GetCallerNamespaceMethodInfos(MethodInfo methodInfo);
         IEnumerable<InvocationExpressionSyntax> GetMethodInvocations();
         IEnumerable<InvocationExpressionSyntax> GetMethodInvocationsByName(string methodName);
+        SeparatedSyntaxList<ArgumentSyntax> GetInvocationMethodArguments(InvocationExpressionSyntax invocationExpression);
         IEnumerable<Type> GetInvocationMethodParameterTypes(InvocationExpressionSyntax invocationExpression);
     }
 
     public class NamespaceAnalyzer : INamespaceAnalyzer
     {
-        List<Assembly> _assemblies;
-        Dictionary<Assembly, SemanticModel> _semanticModels;
-        Dictionary<Assembly, SyntaxTree> _syntaxTrees;
-        Dictionary<InvocationExpressionSyntax, SemanticModel> _methodInvocationModels;
+        private List<Assembly> _assemblies;
+        private Dictionary<Assembly, SemanticModel> _semanticModels;
+        private Dictionary<Assembly, SyntaxTree> _syntaxTrees;
+        private Dictionary<InvocationExpressionSyntax, SemanticModel> _methodInvocationModels;
 
         public NamespaceAnalyzer(List<Assembly> assemblies = null) 
         {
@@ -57,6 +59,7 @@ namespace GraphSight.Core
                 foreach (var invoked in invokedMethods)
                     _methodInvocationModels.Add(invoked, model);
             }
+
         }
 
         public IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute)
@@ -113,6 +116,12 @@ namespace GraphSight.Core
 
             return methodArgumentTypes;
 
+        }
+
+        public SeparatedSyntaxList<ArgumentSyntax> GetInvocationMethodArguments(InvocationExpressionSyntax invocationExpression)
+        {
+            var arguments = invocationExpression.ArgumentList.Arguments;
+            return arguments;
         }
 
         private void GetSemanticModel(Assembly assembly, out SyntaxTree syntaxTree, out SemanticModel model)

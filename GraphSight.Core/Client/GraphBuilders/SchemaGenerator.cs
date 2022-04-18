@@ -15,7 +15,7 @@ namespace GraphSight.Core.GraphBuilders
     /// This allows for the return of a schema as a graph query or loading data directly into class objects without
     /// the user having to define definitions. 
     /// </summary>
-    internal class NamespaceGraphSchemaBuilder
+    internal class SchemaGenerator
     {
         public bool HasErrorHandling { get; set; }
         public bool HasEventTracking { get; set; }
@@ -23,14 +23,14 @@ namespace GraphSight.Core.GraphBuilders
         private INamespaceAnalyzer _namespaceIterator;
         private IValueConverter _valueConverter;
 
-        public NamespaceGraphSchemaBuilder() 
+        public SchemaGenerator() 
         {
             _namespaceIterator = new NamespaceAnalyzer();
             _valueConverter = new TigerValueConverter(); 
 
         }
 
-        public void GenerateSchema(string graphName, List<Assembly> assemblies = null)
+        public TigerSchemaGraph GenerateSchema(string graphName, List<Assembly> assemblies = null)
         {
             NamespaceAnalyzer analyzer = new NamespaceAnalyzer(assemblies);
 
@@ -41,47 +41,20 @@ namespace GraphSight.Core.GraphBuilders
             graph = AddVertices(graph, assemblies, analyzer);
             graph = AddEdges(graph, assemblies, analyzer);
 
-            var invocations = analyzer.GetMethodInvocations();
-
             var dataInserts = analyzer.GetMethodInvocationsByName("TigerGraphDataInsert");
-            var trackingEvents = analyzer.GetMethodInvocationsByName("TigerGraphTrackEvent"); ;
             var errorEvents = analyzer.GetMethodInvocationsByName("TigerGraphTrackError");
+            var trackingEvents = analyzer.GetMethodInvocationsByName("TigerGraphTrackEvent");
 
-            if (trackingEvents.Any())
-            {
-                HasEventTracking = true;
-                graph = AddEventSchema(graph); 
-            }
-            if (errorEvents.Any()) 
-            {
-                HasErrorHandling = true;
-                graph = AddErrorVertex(graph); 
-            }
+            graph = AddSourceTargetPairsForDataInsertions(dataInserts, analyzer, graph);
+            graph = AddSourceTargetPairsForErrors(dataInserts, analyzer, graph);
+            graph = AddSourceTargetPairsForTrackingEvents(dataInserts, analyzer, graph);
 
-            foreach (var dataInsert in dataInserts)
-            { 
+            return graph;
+        }
 
-            }
-
-
-            //From here on out: check parameters of each events/inserts, use them to build additional edges. 
-            //Any GraphDataInsert with an event name as string will create a very generic edge. 
-
-
-            //TODO (old instructions): 
-            //First, call the namespaceiterator GetCallerNamespaceTypesImplementingInterface<T> to find ALL class implementing 
-            //either IVertex or IEdge types.
-            //Using these classes, create new graph nodes. Use namespace iterator GetCallerNamespaceTypesContainingAttribute
-            //to fill in the attributes and names of each vertex and edge. 
-
-            //For each event method from IEventTracker, we want to call namespaceIterator.GetCallerNamespaceMethodReferences().Count()  
-            //on any items containing Event or ErrorEvent attributes. If the count is > 0, set HasErrorHandling/HasEventTracking, then use
-            //the iterator to get the references, find the vertex types, and generate new graph nodes for containing data. 
-
-            //we can also get method references like this example, in case we need this:
-            //namespaceIterator.GetCallerNamespaceMethodReferences(typeof(GraphSightClient).GetMethod("TrackEvent", new Type[] { typeof(IVertex), typeof(string) }));
-            //^^ Basically this would get an instance of that call with TWO DEFINED PARAMETERS.
-
+        public string GenerateSchemaAsText(string graphName, List<Assembly> assemblies = null)
+        {
+            return GenerateSchema(graphName, assemblies).GetGraphQuery();
         }
 
         private TigerSchemaGraph AddVertices(TigerSchemaGraph graph, List<Assembly> assemblies, NamespaceAnalyzer analyzer)
@@ -97,18 +70,18 @@ namespace GraphSight.Core.GraphBuilders
             {
                 VertexName vertexName = (VertexName)Attribute.GetCustomAttribute(vertexType, typeof(VertexName));
 
-                PropertyInfo primaryKeyProperty = GetAttributeProperties(vertexType, typeof(PrimaryKey)).FirstOrDefault();
-                FieldInfo primaryKeyField = GetAttributeFields(vertexType, typeof(PrimaryKey)).FirstOrDefault();
+                PropertyInfo primaryKeyProperty = GetAttributeProperties<PrimaryKey>(vertexType).FirstOrDefault();
+                FieldInfo primaryKeyField = GetAttributeFields<PrimaryKey>(vertexType).FirstOrDefault();
 
-                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties(vertexType, typeof(GraphAttribute));
-                List<FieldInfo> graphAttributeFields = GetAttributeFields(vertexType, typeof(GraphAttribute));
+                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties<GraphAttribute>(vertexType);
+                List<FieldInfo> graphAttributeFields = GetAttributeFields<GraphAttribute>(vertexType);
 
                 if (primaryKeyProperty == null && primaryKeyField == null)
                     throw new Exception($"Implementation of IVertex must have Primary Key for type: {vertexType.Name}");
 
                 string primaryIDName = primaryKeyProperty.Name ?? primaryKeyField.Name;
                 PrimaryIDTypes primaryIDType = _valueConverter
-                    .ConvertVertexPrimaryIDTypes(primaryKeyProperty.GetType() ?? primaryKeyField.GetType());
+                    .ConvertVertexPrimaryIDTypes(primaryKeyProperty.PropertyType ?? primaryKeyField.FieldType);
 
                 TigerSchemaVertex vertex = new TigerSchemaVertex(vertexName.GetName(), primaryIDName, primaryIDType);
 
@@ -134,8 +107,8 @@ namespace GraphSight.Core.GraphBuilders
             {
                 EdgeName edgeName = (EdgeName)Attribute.GetCustomAttribute(edgeType, typeof(EdgeName));
 
-                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties(edgeType, typeof(GraphAttribute));
-                List<FieldInfo> graphAttributeFields = GetAttributeFields(edgeType, typeof(GraphAttribute));
+                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties<GraphAttribute>(edgeType);
+                List<FieldInfo> graphAttributeFields = GetAttributeFields<GraphAttribute>(edgeType);
 
                 TigerSchemaEdge edge = new TigerSchemaEdge(edgeName.GetName());
 
@@ -190,22 +163,99 @@ namespace GraphSight.Core.GraphBuilders
         }
 
 
-        private List<PropertyInfo> GetAttributeProperties<AttributeType>(Type T, AttributeType attribute)
+        private List<PropertyInfo> GetAttributeProperties<AttributeType>(Type vertexType)
         {
-            return T.GetProperties()
-                .Where(prop => prop.IsDefined(attribute.GetType(), false))
+            return vertexType.GetProperties()
+                .Where(prop => prop.GetCustomAttributes(typeof(AttributeType), false).Any())
                 .ToList();
         }
 
-        private List<FieldInfo> GetAttributeFields<AttributeType>(Type T, AttributeType attribute)
+        private List<FieldInfo> GetAttributeFields<AttributeType>(Type vertexType)
         {
-            return T.GetFields()
-                .Where(prop => prop.IsDefined(attribute.GetType(), false))
+            return vertexType.GetFields()
+                .Where(field => field.GetCustomAttributes(typeof(AttributeType), false).Any())
                 .ToList();
         }
 
-        private TigerSchemaGraph AddErrorVertex(TigerSchemaGraph graph)
+        private TigerSchemaGraph AddSourceTargetPairsForDataInsertions(IEnumerable<InvocationExpressionSyntax> dataInserts, NamespaceAnalyzer analyzer, TigerSchemaGraph graph)
         {
+            foreach (var dataInsert in dataInserts)
+            {
+                List<Type> types = analyzer.GetInvocationMethodParameterTypes(dataInsert).ToList();
+                var arguments = analyzer.GetInvocationMethodArguments(dataInsert);
+
+                Type fromVertexType = types[0];
+                Type edge = types[1];
+                Type toVertexType = types[2];
+                VertexName fromVertexName = (VertexName)Attribute.GetCustomAttribute(fromVertexType, fromVertexType.GetType());
+                VertexName toVertexName = (VertexName)Attribute.GetCustomAttribute(toVertexType, toVertexType.GetType());
+
+                TigerSchemaEdge schemaEdge;
+
+                if (edge.IsPrimitive)
+                    schemaEdge = new TigerSchemaEdge(arguments[1].ToString());
+                else
+                {
+                    EdgeName edgeName = (EdgeName)Attribute.GetCustomAttribute(edge, edge.GetType());
+                    schemaEdge = graph.Edges[edgeName.GetName()];
+                }
+
+                var fromVertex = graph.Vertices[fromVertexName.GetName()];
+                var toVertex = graph.Vertices[toVertexName.GetName()];
+                schemaEdge.AddSourceTargetPair(fromVertex, toVertex);
+
+                graph.UpdateEdge(schemaEdge);
+            }
+
+            return graph;
+        }
+
+        private TigerSchemaGraph AddSourceTargetPairsForTrackingEvents(IEnumerable<InvocationExpressionSyntax> trackingEvents, NamespaceAnalyzer analyzer, TigerSchemaGraph graph)
+        {
+            if (trackingEvents.Any())
+                HasEventTracking = true;
+
+            foreach (var trackingEvent in trackingEvents)
+            {
+                List<Type> types = analyzer.GetInvocationMethodParameterTypes(trackingEvent).ToList();
+                var arguments = analyzer.GetInvocationMethodArguments(trackingEvent);
+
+                Type fromVertexType = types[0];
+                VertexName fromVertexName = (VertexName)Attribute.GetCustomAttribute(fromVertexType, fromVertexType.GetType());
+
+                var fromVertex = graph.Vertices[fromVertexName.GetName()];
+
+                graph = AddEventSchema(fromVertex, graph);
+            }
+
+            return graph;
+        }
+
+        private TigerSchemaGraph AddSourceTargetPairsForErrors(IEnumerable<InvocationExpressionSyntax> errorEvents, NamespaceAnalyzer analyzer, TigerSchemaGraph graph)
+        {
+            if (errorEvents.Any())
+                HasErrorHandling = true;
+
+            foreach (var errorEvent in errorEvents)
+            {
+                List<Type> types = analyzer.GetInvocationMethodParameterTypes(errorEvent).ToList();
+                var arguments = analyzer.GetInvocationMethodArguments(errorEvent);
+
+                Type fromVertexType = types[0];
+                VertexName fromVertexName = (VertexName)Attribute.GetCustomAttribute(fromVertexType, fromVertexType.GetType());
+
+                var fromVertex = graph.Vertices[fromVertexName.GetName()];
+
+                graph = AddErrorSchema(fromVertex, graph);
+            }
+
+            return graph;
+        }
+
+        private TigerSchemaGraph AddErrorSchema(TigerSchemaVertex sourceVertex, TigerSchemaGraph graph)
+        {
+            string sourceVertexName = sourceVertex.Name; 
+
             TigerSchemaVertex vertex = new TigerSchemaVertex("ErrorEvent", "EventID", PrimaryIDTypes.STRING);
             vertex.Attributes.Add(new TigerSchemaAttribute("Message", AttributeTypes.STRING));
             vertex.Attributes.Add(new TigerSchemaAttribute("Source", AttributeTypes.STRING));
@@ -213,7 +263,9 @@ namespace GraphSight.Core.GraphBuilders
             vertex.Attributes.Add(new TigerSchemaAttribute("Timestamp", AttributeTypes.DATETIME));
             vertex.Attributes.Add(new TigerSchemaAttribute("StackTrace", AttributeTypes.STRING));
 
-            TigerSchemaEdge edge = new TigerSchemaEdge("ThrewException", true);
+            TigerSchemaEdge edge = new TigerSchemaEdge($"{sourceVertexName}_Threw_Exception", isDirected: true, reverseEdge: $"Thrown_By_{sourceVertexName}");
+
+            edge.AddSourceTargetPair(sourceVertex, vertex); 
 
             graph.AddVertex(vertex);
             graph.AddEdge(edge);
@@ -221,17 +273,22 @@ namespace GraphSight.Core.GraphBuilders
             return graph;
         }
 
-        private TigerSchemaGraph AddEventSchema(TigerSchemaGraph graph)
+        private TigerSchemaGraph AddEventSchema(TigerSchemaVertex sourceVertex, TigerSchemaGraph graph)
         {
+            string sourceVertexName = sourceVertex.Name;
+
             TigerSchemaVertex vertex = new TigerSchemaVertex("Event", "EventID", PrimaryIDTypes.STRING);
             vertex.Attributes.Add(new TigerSchemaAttribute("EventDescription", AttributeTypes.STRING));
 
-            TigerSchemaEdge edge = new TigerSchemaEdge("HasEvent", true);
+            TigerSchemaEdge edge = new TigerSchemaEdge($"{sourceVertexName}_Has_Event", isDirected: true, reverseEdge: $"Invoked_By_{sourceVertexName}");
+
+            edge.AddSourceTargetPair(sourceVertex, vertex);
 
             graph.AddVertex(vertex);
             graph.AddEdge(edge);
 
             return graph;
         }
+
     }
 }
