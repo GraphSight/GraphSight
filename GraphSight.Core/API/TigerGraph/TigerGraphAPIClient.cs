@@ -80,6 +80,18 @@ namespace GraphSight.Core
             return result;
         }
 
+        public async Task<string> Upsert(string data, string graphName)
+        {
+            if (!UserPasswordComboAreSet())
+                throw new Exception("Username and Password are required to run a Tigergraph Query.");
+
+            SetBasicAuthentication(GetCredentials().Username, GetCredentials().Password);
+
+            var result = await HttpPostAsync(TigerAPIEndpoints.Graph + $"/{graphName}", data, DEFAULT_PORT);
+
+            return result;
+        }
+
         internal void ValidateCredentials()
         {
             if (String.IsNullOrEmpty(_credentials.URI))

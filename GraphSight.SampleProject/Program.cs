@@ -76,7 +76,26 @@ namespace GraphSight.SampleProject
             client.TigerGraphDataInsert(tss, edge, taa);
             client.TigerGraphTrackEvent(tss, "Click");
 
-            var schema = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchema("TestGraph");
+
+            TigerSchemaGraph schema = new TigerSchemaGraph("PhoneApp");
+            
+            TigerSchemaVertex User = new TigerSchemaVertex("User", "UserID", PrimaryIDTypes.STRING);
+            User.AddAttribute(new TigerSchemaAttribute("Name", AttributeTypes.STRING, defaultValue: "Bob"));
+
+            TigerSchemaVertex Button = new TigerSchemaVertex("Button", "ButtonName", PrimaryIDTypes.STRING);
+
+            TigerSchemaEdge Clicks = new TigerSchemaEdge("Clicks_Button", isDirected: true, reverseEdge: "Clicked_By");
+            Clicks.AddAttribute(new TigerSchemaAttribute("Timestamp", AttributeTypes.DATETIME));
+            Clicks.AddSourceTargetPair(User, Button);
+
+            schema.AddVertex(User);
+            schema.AddVertex(Button);
+            schema.AddEdge(Clicks);
+
+            string asQuery = schema.GetGraphQuery(); 
+
+
+            var schemaa = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchema("TestGraph");
             var schemaQuery = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchemaAsQuery("TestGraph");
 
             NamespaceAnalyzer it = new NamespaceAnalyzer();

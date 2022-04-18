@@ -124,6 +124,8 @@ namespace GraphSight.Core
 
             HttpResponseMessage response = await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), content);
 
+            //TODO: Polly is currently disabled until better error handling is implemented. 
+
             //HttpResponseMessage response = await
             //_HTTPCircuitBreakerPolicy.ExecuteAsync(() => 
             //    _HTTPRetryPolicy.ExecuteAsync(() =>
@@ -145,6 +147,8 @@ namespace GraphSight.Core
                 throw new ArgumentNullException("HTTP client is not set.");
 
             HttpResponseMessage response = await _httpClient.PostAsync(GetEnpointRequestAddress(endpoint, port), byteContent);
+
+            //TODO: Polly is currently disabled until better error handling is implemented. 
 
             //HttpResponseMessage response = await
             //_HTTPCircuitBreakerPolicy.ExecuteAsync(() => 

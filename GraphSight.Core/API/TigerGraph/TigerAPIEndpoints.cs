@@ -9,6 +9,7 @@ namespace GraphSight.Core
         public static readonly string Ping = "/api/ping";
         public static readonly string RequestToken = "/requesttoken";
         public static readonly string InterpretedQuery = "/gsqlserver/interpreted_query";
+        public static readonly string Upsert = "/graph/interpreted_query";
         public static readonly string Jobs = "/ddl";
         public static readonly string BuiltIns = "/builtins";
         public static readonly string Graph = "/graph";

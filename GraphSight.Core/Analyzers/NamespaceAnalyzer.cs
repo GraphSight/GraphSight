@@ -114,6 +114,9 @@ namespace GraphSight.Core
 
             var methodSymbol = model.GetSymbolInfo(invocationExpression).Symbol;
 
+            //TODO: Code is currently having issues at this point. References to method calls outside of the assembly will return a 
+            //null symbol. This is regardless of whether the SyntaxTree is contained in the existing model. 
+
             methodSymbol = methodSymbol ?? _internalSemanticModel.GetSymbolInfo(invocationExpression).Symbol; 
 
             var methodName = methodSymbol.Name;

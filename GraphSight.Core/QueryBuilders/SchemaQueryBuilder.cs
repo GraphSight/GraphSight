@@ -1,4 +1,6 @@
-﻿using GraphSight.Core.Graph;
+﻿using GraphSight.Core.Converters.TigerGraph;
+using GraphSight.Core.Enums.TigerGraph;
+using GraphSight.Core.Graph;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -43,7 +45,7 @@ namespace GraphSight.Core.QueryBuilders
             {
                 sb.AppendLine($"CREATE {directed} EDGE {edge.Name} (FROM {sourceValuePair.FromVertex.Name}, TO {sourceValuePair.ToVertex.Name}, {attributes})");
                 
-                if (string.IsNullOrEmpty(edge.ReverseEdge) && edge.IsDirected)
+                if (!string.IsNullOrEmpty(edge.ReverseEdge) && edge.IsDirected)
                     sb.Append($"WITH REVERSE EDGE = \"{edge.ReverseEdge}\"");
             }
             string query = sb.ToString();
@@ -56,9 +58,17 @@ namespace GraphSight.Core.QueryBuilders
             StringBuilder sb = new StringBuilder(); 
 
             foreach (var attribute in attributes) {
+                string defaultValue = "";
+
+                if (attribute.DefaultValue != null) 
+                { 
+                    defaultValue = $" DEFAULT {attribute.DefaultValue.ToString()}";
+                }
+
                 sb.Append(attribute.Name)
                     .Append(" ")
                     .Append(attribute.Type.ToString())
+                    .Append(defaultValue)
                     .Append(",");    
             }
 
