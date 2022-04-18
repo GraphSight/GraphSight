@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GraphSight.Core.Graph
 {
-    public class TigerEdge : IEdge
+    public class TigerEdge
     {
         public string Name { get; private set; }
         public List<SourceTargetPair> SourceTargetPairs { get; private set; } = new List<SourceTargetPair>();

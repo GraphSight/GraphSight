@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GraphSight.Core.Graph
 {
-    public class TigerVertex : IVertex
+    public class TigerVertex
     {
         public string Name { get; private set; }
         public object PrimaryId { get; private set; }

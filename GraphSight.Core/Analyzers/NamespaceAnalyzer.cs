@@ -33,7 +33,9 @@ namespace GraphSight.Core
         private Dictionary<Assembly, SyntaxTree> _syntaxTrees;
         private Dictionary<InvocationExpressionSyntax, SemanticModel> _methodInvocationModels;
 
-        public NamespaceAnalyzer(List<Assembly> assemblies = null) 
+        private SemanticModel _internalSemanticModel; 
+
+        public NamespaceAnalyzer(List<Assembly> assemblies = null)
         {
             _assemblies = assemblies ?? new List<Assembly>() { GetExternalAssembly() };
 
@@ -41,7 +43,9 @@ namespace GraphSight.Core
             _syntaxTrees = new Dictionary<Assembly, SyntaxTree>();
             _methodInvocationModels = new Dictionary<InvocationExpressionSyntax, SemanticModel>();
 
-            foreach (var assembly in _assemblies) 
+            SetInternalSemanticModel();
+
+            foreach (var assembly in _assemblies)
             {
                 SyntaxTree syntaxTree;
                 SemanticModel model;
@@ -60,6 +64,13 @@ namespace GraphSight.Core
                     _methodInvocationModels.Add(invoked, model);
             }
 
+        }
+
+        private void SetInternalSemanticModel()
+        {
+            SyntaxTree syntaxTree;
+            SemanticModel model;
+            GetSemanticModel(Assembly.GetExecutingAssembly(), out _, out _internalSemanticModel);
         }
 
         public IEnumerable<Type> GetCallerNamespaceTypesContainingAttribute(Attribute attribute)
@@ -102,6 +113,8 @@ namespace GraphSight.Core
             SemanticModel model = _methodInvocationModels[invocationExpression];
 
             var methodSymbol = model.GetSymbolInfo(invocationExpression).Symbol;
+
+            methodSymbol = methodSymbol ?? _internalSemanticModel.GetSymbolInfo(invocationExpression).Symbol; 
 
             var methodName = methodSymbol.Name;
 
