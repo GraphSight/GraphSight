@@ -15,6 +15,8 @@ namespace GraphSight.Core
         void TigerGraphTrackEvent(IVertex fromVertex, string eventID, string eventDescription);
         [ErrorEvent]
         void TigerGraphTrackError(IVertex fromVertex, Exception exception, string description = "");
+        [SequenceEvent]
+        void TigerGraphTrackSequence(IVertex fromVertex, string sequenceID, string sequenceNumber, string description = "");
     }
 }
  

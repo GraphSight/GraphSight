@@ -120,35 +120,48 @@ namespace GraphSight.Core
             await CallAPI(() => { return _apiClient.QueryAsync(query, parameters); });
         public string RunQuery(string query, Dictionary<string, object> parameters) =>
             RunQueryAsync(query, parameters).Result;
+
+        public async Task<string> UpsertAsync(string data) =>
+            await CallAPI(() => { return _apiClient.UpsertAsync(data, _apiClient.GetCredentials().GraphName); });
+        public string Upsert(string data) => UpsertAsync(data).Result;
         #endregion
 
 
         #region Tracking
         public void TigerGraphDataInsert(IVertex fromVertex, string eventName, IVertex toVertex)
         {
-            //TODO: Stub
+            //TODO: Stub, Call SchemaToJsonConverter and hit the Upsert endpoint.
         }
 
         public void TigerGraphDataInsert(IVertex fromVertex, IEdge edge, IVertex toVertex)
         {
-            //TODO: Stub
+            //TODO: Stub, Call SchemaToJsonConverter and hit the Upsert endpoint.
         }
 
         public void TigerGraphTrackEvent(IVertex fromVertex, string eventDescription)
         {
-            //Dev note: This is supposed to create a new edge/vertex automatically for events
+            //Dev note: This is supposed to create a new edge/vertex automatically for events via the static analyzer. 
+            // For upserting data, we just need a predefined event node. 
             //TODO: Stub
         }
 
         public void TigerGraphTrackEvent(IVertex fromVertex, string eventID, string eventDescription)
         {
-            //Dev note: This is supposed to create a new edge/vertex automatically for events
+            //Dev note: This is supposed to create a new edge/vertex automatically for events via the static analyzer. 
+            // For upserting data, we just need a predefined event node. 
             //TODO: Stub
         }
 
         public void TigerGraphTrackError(IVertex fromVertex, Exception exception, string description = "")
         {
-            //Dev note: This is supposed to create a new edge/vertex automatically for events
+            //Dev note: This is supposed to create a new edge/vertex automatically for events via the static analyzer. 
+            // For upserting data, we just need a predefined error node. 
+            //TODO: Stub
+        }
+        public void TigerGraphTrackSequence(IVertex fromVertex, string sequenceID, string sequenceNumber, string description = "")
+        {
+            //Dev note: This is supposed to create a new edge/vertex automatically for events via the static analyzer. 
+            // For upserting data, we just need a predefined event node.
             //TODO: Stub
         }
         #endregion

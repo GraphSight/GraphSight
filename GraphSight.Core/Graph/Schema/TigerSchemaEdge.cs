@@ -5,7 +5,7 @@ namespace GraphSight.Core.Graph
 {
     public class TigerSchemaEdge
     {
-        public string Name { get; private set; }.
+        public string Name { get; private set; }
         public bool IsDirected { get; private set; } = false;
         public string ReverseEdge { get; private set; }
         public List<SourceTargetPair> sourceTargetPairs { get; private set; } = new List<SourceTargetPair>();

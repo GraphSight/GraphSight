@@ -5,15 +5,15 @@ using System.Text;
 
 namespace GraphSight.Core.Graph.JSON
 {
-    internal class JsonUpsertFormat
+    public class JsonUpsertFormat
     {
-        [JsonProperty("@vertices")]
-        Dictionary<string, JsonVertexType> vertices { get; set; }
-        [JsonProperty("@edges")]
-        Dictionary<string, JsonSourceVertexType> edges { get; set; }
+        [JsonProperty("vertices")]
+        public Dictionary<string, JsonVertexType> vertices { get; set; }
+        [JsonProperty("edges")]
+        public Dictionary<string, JsonSourceVertexType> edges { get; set; }
     }
 
-    internal class JsonVertexType
+    public class JsonVertexType
     {
         public Dictionary<string, JsonVertexID> vertexIDs { get; set; }
         public JsonVertexType(Dictionary<string, JsonVertexID> vertexIDs)
@@ -23,7 +23,7 @@ namespace GraphSight.Core.Graph.JSON
 
     }
 
-    internal class JsonVertexID
+    public class JsonVertexID
     {
         public Dictionary<string, JsonAttribute> jsonAttributes {get;set;}
 
@@ -33,7 +33,7 @@ namespace GraphSight.Core.Graph.JSON
         }
     }
 
-    internal class JsonAttribute
+    public class JsonAttribute
     {
         public object value { get; set; }
         //public int op { get; set; } //Todo: Implement
@@ -45,7 +45,7 @@ namespace GraphSight.Core.Graph.JSON
         }
     }
 
-    internal class JsonSourceVertexType
+    public class JsonSourceVertexType
     {
         public Dictionary<string, JsonEdgeType> sourceVertices { get; set; }
 
@@ -55,7 +55,7 @@ namespace GraphSight.Core.Graph.JSON
         }
     }
 
-    internal class JsonEdgeType
+    public class JsonEdgeType
     {
         public Dictionary<string, JsonTargetVertexType> targetVertices { get; set; }
         public JsonEdgeType(Dictionary<string, JsonTargetVertexType> targetVertices)
@@ -65,7 +65,7 @@ namespace GraphSight.Core.Graph.JSON
 
     }
 
-    internal class JsonTargetVertexType
+    public class JsonTargetVertexType
     {
         public Dictionary<string, JsonTargetVertexID> targetVertexIDs { get; set; }
         public JsonTargetVertexType(Dictionary<string, JsonTargetVertexID> targetVertexIDs)
@@ -75,7 +75,7 @@ namespace GraphSight.Core.Graph.JSON
 
     }
 
-    internal class JsonTargetVertexID
+    public class JsonTargetVertexID
     {
         public Dictionary<string, JsonAttribute> jsonAttributes { get; set; }
 

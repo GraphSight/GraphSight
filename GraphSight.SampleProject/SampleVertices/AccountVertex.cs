@@ -5,16 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GraphSight.SampleProject.Vertices
+namespace GraphSight.SampleProject
 {
-    [VertexName("User")]
-    class TestVertex : IVertex
+    [VertexName("Account")]
+    class AccountVertex : IVertex
     {
         [PrimaryKey]
-        public string primaryID { get; set; }
-
+        public string AccountID { get; set; }
         [GraphAttribute]
-        public string username { get; set; }
+        public string Status { get; set; }
 
     }
 }

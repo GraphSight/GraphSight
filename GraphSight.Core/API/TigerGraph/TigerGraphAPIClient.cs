@@ -80,7 +80,7 @@ namespace GraphSight.Core
             return result;
         }
 
-        public async Task<string> Upsert(string data, string graphName)
+        public async Task<string> UpsertAsync(string data, string graphName)
         {
             if (!UserPasswordComboAreSet())
                 throw new Exception("Username and Password are required to run a Tigergraph Query.");

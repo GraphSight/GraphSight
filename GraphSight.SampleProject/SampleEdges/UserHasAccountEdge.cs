@@ -7,13 +7,10 @@ using System.Threading.Tasks;
 
 namespace GraphSight.SampleProject
 {
-    [VertexName("Device")]
-    class TestAnotherVertex : IVertex
+    [EdgeName("Owns")]
+    class UserHasAccountEdge : IEdge
     {
-        [PrimaryKey]
-        public string id { get; set; }
         [GraphAttribute]
-        public string someData { get; set; }
-
+        public DateTime DateCreated = DateTime.Today;
     }
 }
