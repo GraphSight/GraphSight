@@ -5,36 +5,84 @@ using System.Text;
 
 namespace GraphSight.Core.Graph.JSON
 {
-    //Use this to dynamically set the edge/vertex names: https://stackoverflow.com/questions/37917164/newtonsoft-json-dynamic-property-name
     internal class JsonUpsertFormat
     {
         [JsonProperty("@vertices")]
-        List<JsonVertexType> vertices { get; set; }
+        Dictionary<string, JsonVertexType> vertices { get; set; }
         [JsonProperty("@edges")]
-        List<JsonEdgeType> edges { get; set; }
+        Dictionary<string, JsonSourceVertexType> edges { get; set; }
     }
 
     internal class JsonVertexType
     {
-        List<JsonVertexID> vertexIDs { get; set; }
+        public Dictionary<string, JsonVertexID> vertexIDs { get; set; }
+        public JsonVertexType(Dictionary<string, JsonVertexID> vertexIDs)
+        {
+            this.vertexIDs = vertexIDs;
+        }
+
     }
 
     internal class JsonVertexID
     {
-        List<JsonAttribute> jsonAttributes {get;set;}
+        public Dictionary<string, JsonAttribute> jsonAttributes {get;set;}
+
+        public JsonVertexID(Dictionary<string, JsonAttribute> jsonAttributes)
+        {
+            this.jsonAttributes = jsonAttributes;
+        }
     }
 
     internal class JsonAttribute
     {
-        object value { get; set; }
-        int op { get; set; }
+        public object value { get; set; }
+        //public int op { get; set; } //Todo: Implement
+
+        public JsonAttribute(object value/*, int op = null*/)
+        {
+            this.value = value;
+            //this.op = op;
+        }
+    }
+
+    internal class JsonSourceVertexType
+    {
+        public Dictionary<string, JsonEdgeType> sourceVertices { get; set; }
+
+        public JsonSourceVertexType(Dictionary<string, JsonEdgeType> sourceVertices)
+        {
+            this.sourceVertices = sourceVertices;
+        }
     }
 
     internal class JsonEdgeType
     {
-        //TODO
+        public Dictionary<string, JsonTargetVertexType> targetVertices { get; set; }
+        public JsonEdgeType(Dictionary<string, JsonTargetVertexType> targetVertices)
+        {
+            this.targetVertices = targetVertices;
+        }
+
     }
 
+    internal class JsonTargetVertexType
+    {
+        public Dictionary<string, JsonTargetVertexID> targetVertexIDs { get; set; }
+        public JsonTargetVertexType(Dictionary<string, JsonTargetVertexID> targetVertexIDs)
+        {
+            this.targetVertexIDs = targetVertexIDs;
+        }
 
+    }
+
+    internal class JsonTargetVertexID
+    {
+        public Dictionary<string, JsonAttribute> jsonAttributes { get; set; }
+
+        public JsonTargetVertexID(Dictionary<string, JsonAttribute> jsonAttributes)
+        {
+            this.jsonAttributes = jsonAttributes;
+        }
+    }
 }
 

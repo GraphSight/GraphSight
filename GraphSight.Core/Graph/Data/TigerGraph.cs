@@ -70,10 +70,10 @@ namespace GraphSight.Core.Graph
 
             #endregion
 
-            #region PrivateMethods
-            private TigerSchemaVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
+        #region PrivateMethods
+        private TigerSchemaVertex GetVertexByName(string name) => Vertices.Find(v => v.Name == name);
 
-            #endregion
+        #endregion
         }
     }
 

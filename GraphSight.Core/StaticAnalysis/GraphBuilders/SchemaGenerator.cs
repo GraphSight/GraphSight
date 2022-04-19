@@ -69,12 +69,11 @@ namespace GraphSight.Core.GraphBuilders
             foreach (Type vertexType in vertexTypes)
             {
                 VertexName vertexName = (VertexName)Attribute.GetCustomAttribute(vertexType, typeof(VertexName));
+                PropertyInfo primaryKeyProperty = ReflectionUtils.GetAttributeProperties<PrimaryKey>(vertexType).FirstOrDefault();
+                FieldInfo primaryKeyField = ReflectionUtils.GetAttributeFields<PrimaryKey>(vertexType).FirstOrDefault();
 
-                PropertyInfo primaryKeyProperty = GetAttributeProperties<PrimaryKey>(vertexType).FirstOrDefault();
-                FieldInfo primaryKeyField = GetAttributeFields<PrimaryKey>(vertexType).FirstOrDefault();
-
-                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties<GraphAttribute>(vertexType);
-                List<FieldInfo> graphAttributeFields = GetAttributeFields<GraphAttribute>(vertexType);
+                List<PropertyInfo> graphAttributeProperties = ReflectionUtils.GetAttributeProperties<GraphAttribute>(vertexType);
+                List<FieldInfo> graphAttributeFields = ReflectionUtils.GetAttributeFields<GraphAttribute>(vertexType);
 
                 if (primaryKeyProperty == null && primaryKeyField == null)
                     throw new Exception($"Implementation of IVertex must have Primary Key for type: {vertexType.Name}");
@@ -107,8 +106,8 @@ namespace GraphSight.Core.GraphBuilders
             {
                 EdgeName edgeName = (EdgeName)Attribute.GetCustomAttribute(edgeType, typeof(EdgeName));
 
-                List<PropertyInfo> graphAttributeProperties = GetAttributeProperties<GraphAttribute>(edgeType);
-                List<FieldInfo> graphAttributeFields = GetAttributeFields<GraphAttribute>(edgeType);
+                List<PropertyInfo> graphAttributeProperties = ReflectionUtils.GetAttributeProperties<GraphAttribute>(edgeType);
+                List<FieldInfo> graphAttributeFields = ReflectionUtils.GetAttributeFields<GraphAttribute>(edgeType);
 
                 TigerSchemaEdge edge = new TigerSchemaEdge(edgeName.GetName());
 
@@ -160,21 +159,6 @@ namespace GraphSight.Core.GraphBuilders
 
             TigerSchemaAttribute attribute = new TigerSchemaAttribute(name, attributeType, defaultValue);
             return attribute;
-        }
-
-
-        private List<PropertyInfo> GetAttributeProperties<AttributeType>(Type vertexType)
-        {
-            return vertexType.GetProperties()
-                .Where(prop => prop.GetCustomAttributes(typeof(AttributeType), false).Any())
-                .ToList();
-        }
-
-        private List<FieldInfo> GetAttributeFields<AttributeType>(Type vertexType)
-        {
-            return vertexType.GetFields()
-                .Where(field => field.GetCustomAttributes(typeof(AttributeType), false).Any())
-                .ToList();
         }
 
         private TigerSchemaGraph AddSourceTargetPairsForDataInsertions(IEnumerable<InvocationExpressionSyntax> dataInserts, NamespaceAnalyzer analyzer, TigerSchemaGraph graph)

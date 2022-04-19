@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace GraphSight.Core.Client
+namespace GraphSight.Core
 {
     public static class TigerGraphAnalyzer
     {
