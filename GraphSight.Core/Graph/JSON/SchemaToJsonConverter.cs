@@ -11,13 +11,12 @@ namespace GraphSight.Core.Graph.JSON
         INamespaceAnalyzer _namespaceAnalyzer;
         public SchemaToJsonConverter()
         {
-            _namespaceAnalyzer = new NamespaceAnalyzer(); 
+            _namespaceAnalyzer = new NamespaceAnalyzer();
         }
 
         public JsonUpsertFormat GetSourceDestinationFormat(IVertex source, IEdge edge, IVertex target)
         {
-            //Todo: This code will likely require some cleanup work. 
-
+            //Todo: This code will likely require some cleanup work. Dictionary hell. 
             JsonUpsertFormat fmt = new JsonUpsertFormat();
 
             EdgeName edgeName = GetEdgeName(edge);
@@ -37,65 +36,64 @@ namespace GraphSight.Core.Graph.JSON
             List<PropertyInfo> targetProperties = GetVertexProperties(target);
             List<FieldInfo> targetFields = GetVertexFields(target);
 
+            string sourceKey = GetValueOfPrimaryKey(source, sourcePrimaryKeyProperty, sourcePrimaryKeyField);
+            string targetKey = GetValueOfPrimaryKey(target, targetPrimaryKeyProperty, targetPrimaryKeyField);
 
-            //Set vertices data
-            Dictionary<string, JsonVertexType> vertices = new Dictionary<string, JsonVertexType>();
-            var sourceVertexIds = new Dictionary<string, JsonVertexID>();
-            var targetVertexIds = new Dictionary<string, JsonVertexID>();
+            //**Get vertices**
+            fmt.vertices = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>();
 
-            var sourceVertexId = new JsonVertexID(GetJsonAttributes(source, sourceProperties, sourceFields));
-            sourceVertexIds.Add(GetValueOfPrimaryKey(source, sourcePrimaryKeyProperty, sourcePrimaryKeyField), sourceVertexId);
+            //source
+            var sourceVertexIds = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
+            var sourceVertexAttributes = GetJsonAttributes(source, sourceProperties, sourceFields);
+            sourceVertexIds.Add(sourceKey, sourceVertexAttributes);
+            fmt.vertices.Add(sourceName.GetName(), sourceVertexIds);
 
-            var targetVertexId = new JsonVertexID(GetJsonAttributes(target, targetProperties, targetFields));
-            targetVertexIds.Add(GetValueOfPrimaryKey(target, targetPrimaryKeyProperty, targetPrimaryKeyField), targetVertexId);
+            //target
+            var targetVertexIds = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
+            var targetVertexAttributes = GetJsonAttributes(target, targetProperties, targetFields);
+            targetVertexIds.Add(targetKey, targetVertexAttributes);
+            fmt.vertices.Add(targetName.GetName(), targetVertexIds);
 
-            var sourceVertexType = new JsonVertexType(sourceVertexIds);
-            var targetVertexType = new JsonVertexType(targetVertexIds);
-            vertices.Add(sourceName.GetName(), sourceVertexType);
-            vertices.Add(targetName.GetName(), targetVertexType);
 
-            //Set edge data
-            Dictionary<string, JsonSourceVertexType> edgeSourceTypes = new Dictionary<string, JsonSourceVertexType>();
-            Dictionary<string, JsonEdgeType> edgeTypes = new Dictionary<string, JsonEdgeType>();
-            var sourceVertices = new Dictionary<string, JsonEdgeType>();
-            var targetVertexTypes = new Dictionary<string, JsonTargetVertexType>();
-            var edgetargetVertexIds = new Dictionary<string, JsonTargetVertexID>();
-            var edgeAttributes = GetJsonAttributes(edge, edgeProperties, edgeFields);
+            //**Get edges**
+            fmt.edges = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>>>();
 
-            var jsonTargetVertexId = new JsonTargetVertexID(edgeAttributes); 
-            edgetargetVertexIds.Add(GetValueOfPrimaryKey(target, targetPrimaryKeyProperty, targetPrimaryKeyField), jsonTargetVertexId);
-            var edgeTargetVertexType = new JsonTargetVertexType(edgetargetVertexIds);
-            targetVertexTypes.Add(targetName.GetName(), edgeTargetVertexType);
-            var edgeType = new JsonEdgeType(targetVertexTypes);
-            sourceVertices.Add(GetValueOfPrimaryKey(source, sourcePrimaryKeyProperty, sourcePrimaryKeyField), edgeType);
-            var edgeSourceVertexType = new JsonSourceVertexType(sourceVertices);
-            edgeSourceTypes.Add(sourceName.GetName(), edgeSourceVertexType);
+            var edgeSourceTypes = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>>();
+            var edgeSourceIDs = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
+            var edgeTypes = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>();
+            var edgeAttributes = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
 
-            fmt.vertices = vertices;
-            fmt.edges = edgeSourceTypes;
+            edgeAttributes.Add(targetKey, GetJsonAttributes(edge, edgeProperties, edgeFields));
+            edgeTypes.Add(targetName.GetName(), edgeAttributes);
+            edgeSourceIDs.Add(edgeName.GetName(), edgeTypes);
+            edgeSourceTypes.Add(sourceKey, edgeSourceIDs);
+
+
+            fmt.edges.Add(sourceName.GetName(), edgeSourceTypes);
+
 
             return fmt;
         }
 
-        private Dictionary<string, JsonAttribute> GetJsonAttributes(object data, List<PropertyInfo> properties, List<FieldInfo> fields)
+        private Dictionary<string, Dictionary<string, string>> GetJsonAttributes(object data, List<PropertyInfo> properties, List<FieldInfo> fields)
         {
-            Dictionary<string, JsonAttribute> attrs = new Dictionary<string, JsonAttribute>();
+            Dictionary<string, Dictionary<string, string>> attrs = new Dictionary<string, Dictionary<string, string>>();
 
             foreach (var prop in properties)
             {
                 var val = prop.GetValue(data);
                 var name = prop.Name;
-                attrs.Add(name, new JsonAttribute(val));
+                attrs.Add(name, new Dictionary<string, string>() { { "value", val.ToString() }/*,{"op", ""} */ }); //TODO Implement op code
             }
 
             foreach (var field in fields)
             {
                 var val = field.GetValue(data);
                 var name = field.Name;
-                attrs.Add(name, new JsonAttribute(val));
+                attrs.Add(name, new Dictionary<string, string>() { { "value", val.ToString() }/*,{"op", ""} */ }); //TODO Implement op code
             }
 
-            return attrs; 
+            return attrs;
         }
 
         private string GetValueOfPrimaryKey(object vertex, PropertyInfo propertyInfo, FieldInfo fieldInfo)
