@@ -35,20 +35,20 @@ namespace GraphSight.SampleProject
                 .SetCustomErrorHandler((exception) => Console.WriteLine(exception.Message));
 
             //We can call several API calls on this client. More to come later.
-            client.PingServer();
-            client.RequestToken();
-            client.Upsert("sample data");
-            client.RunQuery("sample interpreted query");
+            //client.PingServer();
+            //client.RequestToken();
+            // client.Upsert("sample data");
+            //client.RunQuery("sample interpreted query");
 
             //Alternatively these requests can be called asynchronously. 
-            Task.Run(() => client.PingServerAsync());
+            //Task.Run(() => client.PingServerAsync());
 
 
             //**Generating a schema**: 
             //We can obtain the query to generate the schema for our entire project by calling the static analyzer:
 
-            TigerSchemaGraph schema = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchema("TestGraph");
-            string schemaQuery = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchemaAsQuery("TestGraph");
+            //TigerSchemaGraph schema = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchema("TestGraph");
+            //string schemaQuery = TigerGraphAnalyzer.AnalyzeCodeAndGenerateSchemaAsQuery("TestGraph");
 
             //This reads all classes that implement the IVertex or IEdge interface and generates the schema accordingly, 
             //and it also dynamically creates Event and Error vertices/edges for any of the client 'Track' calls. 
