@@ -10,6 +10,12 @@ Hi all! We wanted to let you know that we had some issues approaching the deadli
 
 You can see how the project is supposed to be used within the sample project in this repo. Please read the comments as they will point out what works and what doesn't. If you want to see our ongoing progress while judging is underway, feel free to check out our commits on the other branch. 
 
+### Future Implementations: 
+Currently we will be working on the mentioned fixes, as well as 
+  - Mapping data from Tigergraph to objects
+  - Better Error handling for API calls 
+  - Additional API support 
+
 ## Key Contributors
 
 - [Hayden Moritz](https://github.com/MoritzHayden)
