@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,7 +7,12 @@ using System.Text;
 
 namespace GraphSight.Core.Graph.JSON
 {
-    public class SchemaToJsonConverter
+    public interface ISchemaToJsonConverter 
+    {
+        string GetSourceDestinationFormat(IVertex source, IEdge edge, IVertex target);
+    }
+
+    public class SchemaToJsonConverter : ISchemaToJsonConverter
     {
         INamespaceAnalyzer _namespaceAnalyzer;
         public SchemaToJsonConverter()
@@ -14,7 +20,7 @@ namespace GraphSight.Core.Graph.JSON
             _namespaceAnalyzer = new NamespaceAnalyzer();
         }
 
-        public JsonUpsertFormat GetSourceDestinationFormat(IVertex source, IEdge edge, IVertex target)
+        public string GetSourceDestinationFormat(IVertex source, IEdge edge, IVertex target)
         {
             //Todo: This code will likely require some cleanup work. Dictionary hell. 
             JsonUpsertFormat fmt = new JsonUpsertFormat();
@@ -72,7 +78,7 @@ namespace GraphSight.Core.Graph.JSON
             fmt.edges.Add(sourceName.GetName(), edgeSourceTypes);
 
 
-            return fmt;
+            return JsonConvert.SerializeObject(fmt); 
         }
 
         private Dictionary<string, Dictionary<string, string>> GetJsonAttributes(object data, List<PropertyInfo> properties, List<FieldInfo> fields)

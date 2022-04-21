@@ -1,4 +1,5 @@
 ﻿using GraphSight.Core;
+using GraphSight.Core.Graph.JSON;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,8 @@ namespace GraphSight.Core
 {
     public class GraphSightClient : IEventTracker
     {
-        TigerGraphAPIClient _apiClient; 
+        TigerGraphAPIClient _apiClient;
+        ISchemaToJsonConverter _schemaToJsonConverter;
         private Action<Exception> _onErrorAction;
         private Action _onServiceStatusIsDownAction;
 
@@ -19,11 +21,15 @@ namespace GraphSight.Core
         private string _token;
 
         public GraphSightClient() {
+
+            _schemaToJsonConverter = new SchemaToJsonConverter();
+
             _apiClient = new TigerGraphAPIClient();
             _apiClient.SetDefaultGetPolicy(_DEFAULT_GET_TIMEOUT);
             _apiClient.SetDefaultPostPolicy(_DEFAULT_POST_TIMEOUT);
             _apiClient.SetMaxRetryPolicy(_DEFAULT_RETRIES);
             _apiClient.SetCircuitBreakerPolicy(); 
+
         }
 
         public GraphSightClient(string username, string password, string URI, string secret, string graphName) {
@@ -135,7 +141,8 @@ namespace GraphSight.Core
 
         public void TigerGraphDataInsert(IVertex fromVertex, IEdge edge, IVertex toVertex)
         {
-            //TODO: Stub, Call SchemaToJsonConverter and hit the Upsert endpoint.
+            string content = _schemaToJsonConverter.GetSourceDestinationFormat(fromVertex, edge, toVertex);
+            Upsert(content);
         }
 
         public void TigerGraphTrackEvent(IVertex fromVertex, string eventDescription)

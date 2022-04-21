@@ -95,7 +95,7 @@ namespace GraphSight.SampleProject
             };
 
             //This would upload the data to the schema. Note: Does not work due to issues with Upsert conversion, see below
-            client.TigerGraphDataInsert(user, userHasAccount, account);
+            //client.TigerGraphDataInsert(user, userHasAccount, account);
 
 
             //Event Tracking
@@ -110,8 +110,7 @@ namespace GraphSight.SampleProject
             //call this set of instructions. The json string here is built from the user-defined nodes and edges, however the 
             //format is slightly off, so the tracking events will not work until this part is fixed: 
             SchemaToJsonConverter converter = new SchemaToJsonConverter();
-            JsonUpsertFormat result = converter.GetSourceDestinationFormat(user, userHasAccount, account);
-            string jsonString = JsonConvert.SerializeObject(result);
+            string result = converter.GetSourceDestinationFormat(user, userHasAccount, account);
         }
     }
 
