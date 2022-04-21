@@ -138,8 +138,6 @@ namespace GraphSight.Core
 
         protected async Task<string> HttpPostAsync(string endpoint, string body, int port)
         {
-            //var content = new StringContent(body, Encoding.UTF8, "application/raw");
-
             var buffer = System.Text.Encoding.UTF8.GetBytes(body);
             var byteContent = new ByteArrayContent(buffer);
 

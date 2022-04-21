@@ -20,27 +20,29 @@ namespace GraphSight.SampleProject
     {
         static void Main(string[] args)
         {
-           
+
             //**Client Configuartion**
 
             //Client Configuration: Here we can submit API calls or track events. 
             GraphSightClient client = new GraphSightClient()
                 .SetUsername("tigergraph")
                 .SetPassword("123456")
-                .SetURI("1000.i.tgcloud.io")
-                .SetSecret("dmbthm12dhugsaa211tvoj0u9aqaj2dt")
+                .SetURI("7839b70194c04386b375909656d6a526.i.tgcloud.io")
+                .SetSecret("cv9nun4ie3chmkklb39cqu66mc29cs27");
                 //.WithMaxRetries(3)
                 //.WithHttpGetTimeout(15)
                 //.WithHttpPostTimeout(45)
-                .SetCustomErrorHandler((exception) => Console.WriteLine(exception.Message));
+                //.SetCustomErrorHandler((exception) => Console.WriteLine(exception.Message));
 
-            //We can call several API calls on this client. More to come later.
+            client.RequestToken();
+
+            //*We can call several API calls on this client. More to come later.
             //client.PingServer();
             //client.RequestToken();
-            // client.Upsert("sample data");
+            //client.Upsert("sample data");
             //client.RunQuery("sample interpreted query");
 
-            //Alternatively these requests can be called asynchronously. 
+            //*Alternatively these requests can be called asynchronously. 
             //Task.Run(() => client.PingServerAsync());
 
 
@@ -58,22 +60,31 @@ namespace GraphSight.SampleProject
             //However, feel free to take a look at how the code works. 
 
 
-            //To see how the generated schema would create a query, here is a manually-built schema to demonstrate: 
+            //*To see how the generated schema would create a query, here is a manually-built schema to demonstrate: 
             TigerSchemaGraph sampleSchema = new TigerSchemaGraph("PhoneApp");
 
             TigerSchemaVertex User = new TigerSchemaVertex("User", "UserID", PrimaryIDTypes.STRING);
             User.AddAttribute(new TigerSchemaAttribute("Name", AttributeTypes.STRING, defaultValue: "Bob"));
+
+            TigerSchemaVertex Account = new TigerSchemaVertex("Account", "AccountID", PrimaryIDTypes.STRING);
+            Account.AddAttribute(new TigerSchemaAttribute("Status", AttributeTypes.STRING, defaultValue: "Active"));
 
             TigerSchemaVertex Button = new TigerSchemaVertex("Button", "ButtonName", PrimaryIDTypes.STRING);
 
             TigerSchemaEdge Clicks = new TigerSchemaEdge("User_Clicks_Button", isDirected: true, reverseEdge: "Button_Clicked_By");
             Clicks.AddAttribute(new TigerSchemaAttribute("Timestamp", AttributeTypes.DATETIME));
 
+            TigerSchemaEdge HasAccount = new TigerSchemaEdge("User_Has_Account", isDirected: true, reverseEdge: "Button_Clicked_By");
+            HasAccount.AddAttribute(new TigerSchemaAttribute("DateCreated", AttributeTypes.DATETIME));
+
             Clicks.AddSourceTargetPair(User, Button);
+            HasAccount.AddSourceTargetPair(User, Account);
 
             sampleSchema.AddVertex(User);
+            sampleSchema.AddVertex(Account); 
             sampleSchema.AddVertex(Button);
             sampleSchema.AddEdge(Clicks);
+            sampleSchema.AddEdge(HasAccount); 
 
             string asQuery = sampleSchema.GetGraphQuery();
 
@@ -94,23 +105,17 @@ namespace GraphSight.SampleProject
                 DateCreated = DateTime.Today
             };
 
-            //This would upload the data to the schema. Note: Does not work due to issues with Upsert conversion, see below
-            //client.TigerGraphDataInsert(user, userHasAccount, account);
-
+            //*This would upload the data to the schema. (It works, try it out with the generated schema above! (see 'asQuery'))
+            client.TigerGraphDataInsert(user, userHasAccount, account);
 
             //Event Tracking
             //When certain events happen in our code, data from these calls will populate event or error nodes for the vertex passed in. 
+            //** NOTE: These do not currently function as intended. We ran out of time for finishing implementation, 
+            //however, the structure is in place to finish these quickly.
             client.TigerGraphTrackError(user, new Exception("User App Broke!"));
             client.TigerGraphTrackEvent(user, eventID: "1", eventDescription: "Clicked Help Button");
             client.TigerGraphTrackSequence(user, sequenceID: "1001", sequenceNumber: "1", description: "User entered Login Screen");
             client.TigerGraphTrackSequence(user, sequenceID: "1001", sequenceNumber: "2", description: "User entered Account Screen");
-
-
-            //Above it was mentioned that the upsert call is not currently working. The Client's Track functions would
-            //call this set of instructions. The json string here is built from the user-defined nodes and edges, however the 
-            //format is slightly off, so the tracking events will not work until this part is fixed: 
-            SchemaToJsonConverter converter = new SchemaToJsonConverter();
-            string result = converter.GetSourceDestinationFormat(user, userHasAccount, account);
         }
     }
 

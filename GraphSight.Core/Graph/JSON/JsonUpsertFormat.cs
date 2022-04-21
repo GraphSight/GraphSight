@@ -6,7 +6,7 @@ using System.Text;
 namespace GraphSight.Core.Graph.JSON
 {
     //This is disgusting, but it will work for now. 
-    public class JsonUpsertFormat
+    internal class JsonUpsertFormat
     {
         [JsonProperty("vertices")]
         public Dictionary<string,                       //VertexType

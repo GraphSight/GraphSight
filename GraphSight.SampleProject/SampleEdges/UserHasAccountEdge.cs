@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GraphSight.SampleProject
 {
-    [EdgeName("Owns")]
+    [EdgeName("User_Has_Account")]
     class UserHasAccountEdge : IEdge
     {
         [GraphAttribute]

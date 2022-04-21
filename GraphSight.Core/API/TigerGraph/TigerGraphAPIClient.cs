@@ -85,7 +85,7 @@ namespace GraphSight.Core
             if (!UserPasswordComboAreSet())
                 throw new Exception("Username and Password are required to run a Tigergraph Query.");
 
-            SetBasicAuthentication(GetCredentials().Username, GetCredentials().Password);
+            SetTokenAuthentication(_token);
 
             var result = await HttpPostAsync(TigerAPIEndpoints.Graph + $"/{graphName}", data, DEFAULT_PORT);
 

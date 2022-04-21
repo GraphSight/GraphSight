@@ -142,7 +142,7 @@ namespace GraphSight.Core
         public void TigerGraphDataInsert(IVertex fromVertex, IEdge edge, IVertex toVertex)
         {
             string content = _schemaToJsonConverter.GetSourceDestinationFormat(fromVertex, edge, toVertex);
-            Upsert(content);
+            var result = Upsert(content); //TODO: Add error handling here. 
         }
 
         public void TigerGraphTrackEvent(IVertex fromVertex, string eventDescription)

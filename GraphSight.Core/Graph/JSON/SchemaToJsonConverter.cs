@@ -7,12 +7,12 @@ using System.Text;
 
 namespace GraphSight.Core.Graph.JSON
 {
-    public interface ISchemaToJsonConverter 
+    internal interface ISchemaToJsonConverter 
     {
         string GetSourceDestinationFormat(IVertex source, IEdge edge, IVertex target);
     }
 
-    public class SchemaToJsonConverter : ISchemaToJsonConverter
+    internal class SchemaToJsonConverter : ISchemaToJsonConverter
     {
         INamespaceAnalyzer _namespaceAnalyzer;
         public SchemaToJsonConverter()
@@ -87,19 +87,26 @@ namespace GraphSight.Core.Graph.JSON
 
             foreach (var prop in properties)
             {
-                var val = prop.GetValue(data);
+                var val = Format(prop.GetValue(data));
                 var name = prop.Name;
                 attrs.Add(name, new Dictionary<string, string>() { { "value", val.ToString() }/*,{"op", ""} */ }); //TODO Implement op code
             }
 
             foreach (var field in fields)
             {
-                var val = field.GetValue(data);
+                var val = Format(field.GetValue(data));
                 var name = field.Name;
                 attrs.Add(name, new Dictionary<string, string>() { { "value", val.ToString() }/*,{"op", ""} */ }); //TODO Implement op code
             }
 
             return attrs;
+        }
+
+        private object Format(object obj)
+        {
+            if (obj.GetType() == typeof(DateTime))
+                return ((DateTime)obj).ToString("yyyy-MM-dd H:mm:ss");
+            return obj;
         }
 
         private string GetValueOfPrimaryKey(object vertex, PropertyInfo propertyInfo, FieldInfo fieldInfo)
