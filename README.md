@@ -9,6 +9,7 @@ Currently experiencing an issue with static analysis outside of scoped namespace
   - Mapping data from Tigergraph to objects
   - Better Error handling for API calls 
   - Additional API support 
+  - Need to implment testing
 
 ## Key Contributors
 
